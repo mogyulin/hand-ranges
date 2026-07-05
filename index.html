@@ -54,7 +54,7 @@
             </div>
         </div>
 
-        <!-- ② 動的セレクターエリア（JSで構造を綺麗に制御します） -->
+        <!-- ② 動的セレクターエリア -->
         <div id="dynamic-selectors"></div>
     </div>
 
@@ -84,7 +84,7 @@
 
         let currentSituation = 'open';
         let currentMyPos = 'UTG';
-        let currentOpPos = 'UTG'; // 初期状態の相手はUTG
+        let currentOpPos = 'HJ';
 
         const rangeData = {
             open: {
@@ -157,37 +157,26 @@
             }
         };
 
-        // セレクターエリアを動的にレンダリングする（完全修正版）
         function renderSelectors() {
             const container = document.getElementById('dynamic-selectors');
             container.innerHTML = '';
 
-            const myPosRow = `
-                <div class="row" id="mypos-row">
-                    <div class="row-label">MY POS</div>
-                    <div class="btn-group" id="mypos-group"></div>
-                </div>`;
+            const myPosRow = `<div class="row" id="mypos-row"><div class="row-label">MY POS</div><div class="btn-group" id="mypos-group"></div></div>`;
+            const oppPosRow = `<div class="row" id="oppositon-row"><div class="row-label">OPP POS</div><div class="btn-group" id="oppos-group"></div></div>`;
 
-            const oppPosRow = `
-                <div class="row" id="oppositon-row">
-                    <div class="row-label">OPP POS</div>
-                    <div class="btn-group" id="oppos-group"></div>
-                </div>`;
-
-            // 3-BETの時だけ、相手（OPP）を上に、自分（MY）を下に。
-            if (currentSituation === 'threeBet') {
-                container.innerHTML = oppPosRow + myPosRow;
-            } else {
+            // OPEN以外（3-BET, Vs 3-BET, Vs 4-BET）はすべて OPP POS（相手）を上に配置！
+            if (currentSituation === 'open') {
                 container.innerHTML = myPosRow + oppPosRow;
+            } else {
+                container.innerHTML = oppPosRow + myPosRow;
             }
 
-            // それぞれのボタン中身を生成
             buildOpponentButtons();
             buildMyButtons();
             updateButtonsUI();
         }
 
-        // OPP POSのボタンを生成
+        // OPP POS (相手のアクション位置) ボタンの生成
         function buildOpponentButtons() {
             const container = document.getElementById('oppos-group');
             if (!container) return;
@@ -197,17 +186,15 @@
             let allowedOpp = [];
 
             if (currentSituation === 'open') {
-                // OPENの時は相手関係なし
-                return;
+                return; // OPENの時は相手不要
             } else if (currentSituation === 'threeBet') {
-                // 🌟 3-BETの時は「相手のオープン」が起点！BB以外の全ポジションから自由に選択可能にする
+                // 3-BET：相手のオープン位置（BB以外）
                 allowedOpp = ['UTG', 'HJ', 'CO', 'BTN', 'SB'];
             } else {
-                // Vs 3-Bet / Vs 4-Bet は、自分がオープンした後の話なので、自分以外の席
-                allowedOpp = allPos.filter(p => p !== currentMyPos);
+                // Vs 3-BET / Vs 4-BET：相手が自分に3B/4Bを打ってきた位置（UTG以外ならどこでもあり得る）
+                allowedOpp = ['HJ', 'CO', 'BTN', 'SB', 'BB'];
             }
 
-            // 現在選択されている値が選択肢にない場合は補正
             if (!allowedOpp.includes(currentOpPos)) {
                 currentOpPos = allowedOpp[0];
             }
@@ -217,10 +204,8 @@
                 btn.innerText = pos;
                 btn.onclick = () => {
                     currentOpPos = pos;
-                    // 3-BETの時は相手を変えたら、自分の選べるポジション（MY POS）を再構築する
-                    if (currentSituation === 'threeBet') {
-                        buildMyButtons();
-                    }
+                    // 相手の位置が変わったら、自分の選択肢（MY POS）を動的に再構築
+                    buildMyButtons();
                     updateButtonsUI();
                     updateDisplay();
                 };
@@ -228,7 +213,7 @@
             });
         }
 
-        // MY POSのボタンを生成
+        // MY POS (自分のポジション) ボタンの生成
         function buildMyButtons() {
             const container = document.getElementById('mypos-group');
             if (!container) return;
@@ -238,15 +223,16 @@
             let allowedMy = [];
 
             if (currentSituation === 'open') {
-                // OPENの時はBB以外全部
                 allowedMy = ['UTG', 'HJ', 'CO', 'BTN', 'SB'];
             } else if (currentSituation === 'threeBet') {
-                // 🌟 3-BETの時は「選ばれた相手（OPP）より後ろの席」だけが出現する！
+                // 3-BET：オープンした相手（OPP）より「後ろの席」
                 const oppIdx = allPos.indexOf(currentOpPos);
                 allowedMy = allPos.slice(oppIdx + 1);
             } else {
-                // Vs 3B / Vs 4B の時は、BBを含めた全ポジションがベース（相手ボタンと同期）
-                allowedMy = ['UTG', 'HJ', 'CO', 'BTN', 'SB', 'BB'];
+                // Vs 3-BET / Vs 4-BET：3B/4Bを打ってきた相手（OPP）より「前の席」
+                const oppIdx = allPos.indexOf(currentOpPos);
+                allowedMy = allPos.slice(0, oppIdx);
+                if (allowedMy.length === 0) allowedMy = ['UTG'];
             }
 
             if (!allowedMy.includes(currentMyPos)) {
@@ -258,10 +244,6 @@
                 btn.innerText = pos;
                 btn.onclick = () => {
                     currentMyPos = pos;
-                    // Vs 3B / Vs 4B の時は、自分を変えたら相手のボタンを再構築する
-                    if (currentSituation !== 'threeBet' && currentSituation !== 'open') {
-                        buildOpponentButtons();
-                    }
                     updateButtonsUI();
                     updateDisplay();
                 };
@@ -270,13 +252,11 @@
         }
 
         function updateButtonsUI() {
-            // SITUATIONのアクティブ
             const sitGroup = document.getElementById('situation-group');
             sitGroup.querySelectorAll('button').forEach(b => {
                 b.classList.toggle('active', b.getAttribute('onclick').includes(`'${currentSituation}'`));
             });
 
-            // MY POSのアクティブ
             const myPosGroup = document.getElementById('mypos-group');
             if (myPosGroup) {
                 myPosGroup.querySelectorAll('button').forEach(b => {
@@ -284,7 +264,6 @@
                 });
             }
 
-            // OPP POSのアクティブ
             const oppGroup = document.getElementById('oppos-group');
             if (oppGroup) {
                 oppGroup.querySelectorAll('button').forEach(b => {
@@ -296,15 +275,16 @@
         function setSituation(sit) {
             currentSituation = sit;
             
-            // 各シチュエーション切り替え時のデフォルト位置を最適化
+            // 切り替え時の初期デフォルト位置を各状況に合わせて最適化
             if (sit === 'open') {
                 currentMyPos = 'UTG';
             } else if (sit === 'threeBet') {
-                currentOpPos = 'UTG'; // まず相手をUTGにする
-                currentMyPos = 'HJ';  // 自分は自動的にHJになる
+                currentOpPos = 'UTG';
+                currentMyPos = 'HJ';
             } else {
-                currentMyPos = 'UTG';
+                // Vs 3B / Vs 4B: 「HJが3Bしてきた」に対して「自分がUTG」の状態を初期値に
                 currentOpPos = 'HJ';
+                currentMyPos = 'UTG';
             }
 
             renderSelectors();
@@ -343,7 +323,7 @@
                 cell.innerText = hand;
                 grid.appendChild(cell);
             });
-            setSituation('open'); // 初期状態はOPEN
+            setSituation('open');
         }
 
         function updateDisplay() {
@@ -359,11 +339,8 @@
                     if (el) el.style.background = 'var(--raise)';
                 });
             } else {
+                // データ構造のキーはすべて 'MYPOS_OPPPOS'
                 let key = `${currentMyPos}_${currentOpPos}`;
-                if (currentSituation === 'threeBet') {
-                    key = `${currentOpPos}_${currentMyPos}`;
-                }
-                
                 const data = rangeData[currentSituation][key] || { call: [], raise: [], allin: [] };
 
                 (data.call || []).forEach(h => { const el = document.getElementById('hand-' + h); if(el) el.style.background = 'var(--call)'; });
