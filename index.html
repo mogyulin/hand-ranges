@@ -164,7 +164,6 @@
             const myPosRow = `<div class="row" id="mypos-row"><div class="row-label">MY POS</div><div class="btn-group" id="mypos-group"></div></div>`;
             const oppPosRow = `<div class="row" id="oppositon-row"><div class="row-label">OPP POS</div><div class="btn-group" id="oppos-group"></div></div>`;
 
-            // OPEN以外（3-BET, Vs 3-BET, Vs 4-BET）はすべて OPP POS（相手）を上に配置！
             if (currentSituation === 'open') {
                 container.innerHTML = myPosRow + oppPosRow;
             } else {
@@ -176,7 +175,6 @@
             updateButtonsUI();
         }
 
-        // OPP POS (相手のアクション位置) ボタンの生成
         function buildOpponentButtons() {
             const container = document.getElementById('oppos-group');
             if (!container) return;
@@ -186,12 +184,10 @@
             let allowedOpp = [];
 
             if (currentSituation === 'open') {
-                return; // OPENの時は相手不要
+                return;
             } else if (currentSituation === 'threeBet') {
-                // 3-BET：相手のオープン位置（BB以外）
                 allowedOpp = ['UTG', 'HJ', 'CO', 'BTN', 'SB'];
             } else {
-                // Vs 3-BET / Vs 4-BET：相手が自分に3B/4Bを打ってきた位置（UTG以外ならどこでもあり得る）
                 allowedOpp = ['HJ', 'CO', 'BTN', 'SB', 'BB'];
             }
 
@@ -204,7 +200,6 @@
                 btn.innerText = pos;
                 btn.onclick = () => {
                     currentOpPos = pos;
-                    // 相手の位置が変わったら、自分の選択肢（MY POS）を動的に再構築
                     buildMyButtons();
                     updateButtonsUI();
                     updateDisplay();
@@ -213,7 +208,6 @@
             });
         }
 
-        // MY POS (自分のポジション) ボタンの生成
         function buildMyButtons() {
             const container = document.getElementById('mypos-group');
             if (!container) return;
@@ -225,11 +219,9 @@
             if (currentSituation === 'open') {
                 allowedMy = ['UTG', 'HJ', 'CO', 'BTN', 'SB'];
             } else if (currentSituation === 'threeBet') {
-                // 3-BET：オープンした相手（OPP）より「後ろの席」
                 const oppIdx = allPos.indexOf(currentOpPos);
                 allowedMy = allPos.slice(oppIdx + 1);
             } else {
-                // Vs 3-BET / Vs 4-BET：3B/4Bを打ってきた相手（OPP）より「前の席」
                 const oppIdx = allPos.indexOf(currentOpPos);
                 allowedMy = allPos.slice(0, oppIdx);
                 if (allowedMy.length === 0) allowedMy = ['UTG'];
@@ -275,14 +267,12 @@
         function setSituation(sit) {
             currentSituation = sit;
             
-            // 切り替え時の初期デフォルト位置を各状況に合わせて最適化
             if (sit === 'open') {
                 currentMyPos = 'UTG';
             } else if (sit === 'threeBet') {
                 currentOpPos = 'UTG';
                 currentMyPos = 'HJ';
             } else {
-                // Vs 3B / Vs 4B: 「HJが3Bしてきた」に対して「自分がUTG」の状態を初期値に
                 currentOpPos = 'HJ';
                 currentMyPos = 'UTG';
             }
@@ -327,6 +317,7 @@
         }
 
         function updateDisplay() {
+            // グリッドの全初期化（フォールドカラーに戻す）
             matrixCells.forEach(hand => {
                 const el = document.getElementById('hand-' + hand);
                 el.style.background = 'var(--fold)';
@@ -339,8 +330,14 @@
                     if (el) el.style.background = 'var(--raise)';
                 });
             } else {
-                // データ構造のキーはすべて 'MYPOS_OPPPOS'
-                let key = `${currentMyPos}_${currentOpPos}`;
+                // 🌟ここを完全修正！データ定義の「ねじれ」をここで綺麗にハンドリング
+                let key = '';
+                if (currentSituation === 'threeBet') {
+                    key = `${currentOpPos}_${currentMyPos}`; // threeBetデータは OPP_MY の並び順
+                } else {
+                    key = `${currentMyPos}_${currentOpPos}`; // vs3bet, vs4betデータは MY_OPP の並び順
+                }
+                
                 const data = rangeData[currentSituation][key] || { call: [], raise: [], allin: [] };
 
                 (data.call || []).forEach(h => { const el = document.getElementById('hand-' + h); if(el) el.style.background = 'var(--call)'; });
