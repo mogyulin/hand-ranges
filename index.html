@@ -88,7 +88,7 @@
         let currentMyPos = 'UTG';
         let currentOpPos = 'HJ';
 
-        // 150bb完全最適化データ
+        // 150bb最適化データ（vs4betの全組み合わせを完全網羅）
         const rangeData = {
             open: {
                 UTG: ['AA','KK','QQ','JJ','TT','99','88','77','AKs','AQs','AJs','ATs','A5s','A4s','A3s','KQs','KJs','KTs','QJs','QTs','JTs','T9s','98s','AKo','AQo'],
@@ -142,16 +142,37 @@
                 'SB_BB':   { call: ['QQ','JJ','TT','99','88','77','66','AQs','AJs','ATs','KQs','KJs','QJs','JTs','AKo','AQo','KQo'], raise: ['AA','KK','QQ','AKs'], bluff: ['A5s','A4s','A3s'], allin: [] }
             },
             vs4bet: {
+                // 相手_自分 の組み合わせを全網羅
+                'UTG_HJ':  { call: ['KK','QQ','AKs'],                 raise: [], bluff: [], allin: ['AA'] },
+                'UTG_CO':  { call: ['KK','QQ','AKs'],                 raise: [], bluff: [], allin: ['AA'] },
+                'UTG_BTN': { call: ['KK','AKs'],                      raise: [], bluff: [], allin: ['AA'] },
+                'UTG_SB':  { call: ['QQ','AKs'],                      raise: [], bluff: [], allin: ['AA','KK'] },
+                'UTG_BB':  { call: ['QQ','JJ','AKs'],                 raise: [], bluff: [], allin: ['AA','KK'] },
+                
                 'HJ_UTG':  { call: ['KK','QQ','AKs'],                 raise: [], bluff: [], allin: ['AA'] },
+                'HJ_CO':   { call: ['KK','QQ','JJ','AKs'],             raise: [], bluff: [], allin: ['AA','AKo'] },
+                'HJ_BTN':  { call: ['KK','QQ','AKs'],                 raise: [], bluff: [], allin: ['AA','AKo'] },
+                'HJ_SB':   { call: ['QQ','JJ','AKs'],                 raise: [], bluff: [], allin: ['AA','KK','AKo'] },
+                'HJ_BB':   { call: ['QQ','JJ','AKs'],                 raise: [], bluff: [], allin: ['AA','KK'] },
+                
                 'CO_UTG':  { call: ['KK','QQ','AKs'],                 raise: [], bluff: [], allin: ['AA'] },
                 'CO_HJ':   { call: ['KK','QQ','JJ','AKs'],             raise: [], bluff: [], allin: ['AA','AKo'] },
+                'CO_BTN':  { call: ['KK','QQ','JJ','AKs','AQs','AKo'], raise: [], bluff: ['A5s','A4s'], allin: ['AA'] },
+                'CO_SB':   { call: ['QQ','JJ','TT','AKs','AQs'],       raise: [], bluff: ['A5s'], allin: ['AA','KK','AKo'] },
+                'CO_BB':   { call: ['QQ','JJ','TT','AKs','AQs'],       raise: [], bluff: [], allin: ['AA','KK','AKo'] },
+                
                 'BTN_UTG': { call: ['KK','AKs'],                      raise: [], bluff: [], allin: ['AA'] },
                 'BTN_HJ':  { call: ['KK','QQ','AKs'],                 raise: [], bluff: [], allin: ['AA','AKo'] },
                 'BTN_CO':  { call: ['KK','QQ','JJ','AKs','AQs','AKo'], raise: [], bluff: ['A5s','A4s'], allin: ['AA'] },
+                'BTN_SB':  { call: ['QQ','JJ','TT','99','AKs','AQs','KQs','AKo','AQo'], raise: [], bluff: ['A5s','A4s','A3s'], allin: ['AA','KK'] },
+                'BTN_BB':  { call: ['QQ','JJ','TT','99','AKs','AQs','KQs','AKo'], raise: [], bluff: ['A5s','A4s'], allin: ['AA','KK'] },
+                
                 'SB_UTG':  { call: ['QQ','AKs'],                      raise: [], bluff: [], allin: ['AA','KK'] },
                 'SB_HJ':   { call: ['QQ','JJ','AKs'],                 raise: [], bluff: [], allin: ['AA','KK','AKo'] },
                 'SB_CO':   { call: ['QQ','JJ','TT','AKs','AQs'],       raise: [], bluff: ['A5s'], allin: ['AA','KK','AKo'] },
                 'SB_BTN':  { call: ['QQ','JJ','TT','99','AKs','AQs','KQs','AKo','AQo'], raise: [], bluff: ['A5s','A4s','A3s'], allin: ['AA','KK'] },
+                'SB_BB':   { call: ['QQ','JJ','TT','99','88','AKs','AQs','KQs','AKo','AQo'], raise: [], bluff: ['A5s','A4s'], allin: ['AA','KK'] },
+                
                 'BB_UTG':  { call: ['QQ','JJ','AKs'],                 raise: [], bluff: [], allin: ['AA','KK'] },
                 'BB_HJ':   { call: ['QQ','JJ','AKs'],                 raise: [], bluff: [], allin: ['AA','KK'] },
                 'BB_CO':   { call: ['QQ','JJ','TT','AKs','AQs'],       raise: [], bluff: [], allin: ['AA','KK','AKo'] },
@@ -167,6 +188,7 @@
             const myPosRow = `<div class="row" id="mypos-row"><div class="row-label">MY POS</div><div class="btn-group" id="mypos-group"></div></div>`;
             const oppPosRow = `<div class="row" id="oppositon-row"><div class="row-label">OPP POS</div><div class="btn-group" id="oppos-group"></div></div>`;
 
+            // 見やすさ向上のため、3BET/Vs4BET時は「相手→自分」、Vs3BET時は「自分→相手」に並び順を制御
             if (currentSituation === 'open' || currentSituation === 'vs3bet') {
                 container.innerHTML = myPosRow + oppPosRow;
             } else {
@@ -183,18 +205,22 @@
             if (!container) return;
             container.innerHTML = '';
 
-            let allowedOpp = [];
             if (currentSituation === 'open') return;
-            else if (currentSituation === 'threeBet' || currentSituation === 'vs4bet') allowedOpp = ['UTG', 'HJ', 'CO', 'BTN', 'SB'];
-            else allowedOpp = ['HJ', 'CO', 'BTN', 'SB', 'BB'];
 
-            if (!allowedOpp.includes(currentOpPos)) currentOpPos = allowedOpp[0];
+            // 🌟どのシチュエーションでも、全ポジションからアクションが飛んでくるためフルオープン
+            const allPos = ['UTG', 'HJ', 'CO', 'BTN', 'SB', 'BB'];
 
-            allowedOpp.forEach(pos => {
+            if (!allPos.includes(currentOpPos)) currentOpPos = allPos[0];
+
+            allPos.forEach(pos => {
                 const btn = document.createElement('button');
                 btn.innerText = pos;
                 btn.onclick = () => {
                     currentOpPos = pos;
+                    // 相手と同じポジションにならないよう自動調整
+                    if (currentMyPos === currentOpPos) {
+                        currentMyPos = allPos.find(p => p !== currentOpPos);
+                    }
                     buildMyButtons();
                     updateButtonsUI();
                     updateDisplay();
@@ -212,9 +238,9 @@
             let allowedMy = [];
 
             if (currentSituation === 'open') {
-                allowedMy = ['UTG', 'HJ', 'CO', 'BTN', 'SB'];
+                allowedMy = ['UTG', 'HJ', 'CO', 'BTN', 'SB']; // OpenだけBBを除外
             } else {
-                // 🌟Vs3B、Vs4B、3Bはすべて1周する前提なので、相手と同じポジション以外「全ポジション」が選べるように変更
+                // 🌟相手（OPP POS）と被らないすべてのポジションを選択可能に
                 allowedMy = allPos.filter(pos => pos !== currentOpPos);
             }
 
@@ -321,13 +347,12 @@
                     if (el) el.style.background = 'var(--raise)';
                 });
             } else {
-                // 🌟データ定義側のキーは常に[相手_自分]、または[自分_相手]の形に合わせて固定。
-                // データのオブジェクト構造（threeBet、vs3bet、vs4bet）のキーの命名規則に100%一致させます。
+                // 🌟データ検索キーの作成（3BET、vs4betは常に[相手_自分] / vs3betは[自分_相手]）
                 let key;
                 if (currentSituation === 'threeBet' || currentSituation === 'vs4bet') {
-                    key = `${currentOpPos}_${currentMyPos}`; // 相手_自分 (例: HJ_SB)
+                    key = `${currentOpPos}_${currentMyPos}`;
                 } else {
-                    key = `${currentMyPos}_${currentOpPos}`; // 自分_相手 (例: UTG_HJ)
+                    key = `${currentMyPos}_${currentOpPos}`;
                 }
                 
                 const data = rangeData[currentSituation][key] || { call: [], raise: [], bluff: [], allin: [] };
