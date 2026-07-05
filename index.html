@@ -12,7 +12,8 @@
             --primary: #8b5cf6;
             --fold: #334155;
             --call: #10b981;
-            --raise: #ef4444;
+            --raise: #ef4444;       /* バリューレイズ（赤） */
+            --bluff: #ec4899;       /* ブラフレイズ（ピンク）★新設 */
             --allin: #f59e0b;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-user-select: none; user-select: none; }
@@ -28,7 +29,7 @@
         button.active { background: var(--primary); color: #fff; }
 
         /* 凡例 */
-        .legend { display: flex; justify-content: center; gap: 15px; margin-bottom: 10px; font-size: 0.75rem; }
+        .legend { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin-bottom: 10px; font-size: 0.75rem; }
         .legend-item { display: flex; align-items: center; gap: 4px; }
         .dot { width: 12px; height: 12px; border-radius: 2px; }
 
@@ -60,9 +61,10 @@
 
     <!-- 凡例 -->
     <div class="legend">
-        <div class="legend-item"><div class="dot" style="background:var(--fold)"></div>Fold/Pure</div>
+        <div class="legend-item"><div class="dot" style="background:var(--fold)"></div>Fold</div>
         <div class="legend-item" id="leg-call"><div class="dot" style="background:var(--call)"></div>Call</div>
-        <div class="legend-item" id="leg-raise"><div class="dot" style="background:var(--raise)"></div>Open</div>
+        <div class="legend-item" id="leg-raise"><div class="dot" style="background:var(--raise)"></div>Value</div>
+        <div class="legend-item" id="leg-bluff"><div class="dot" style="background:var(--bluff)"></div>Bluff</div>
         <div class="legend-item" id="leg-allin" style="display:none;"><div class="dot" style="background:var(--allin)"></div>5B All-in</div>
     </div>
 
@@ -86,74 +88,75 @@
         let currentMyPos = 'UTG';
         let currentOpPos = 'HJ';
 
+        // 150bb完全最適化 ＆ バリュー/ブラフ完全分離データ
         const rangeData = {
             open: {
                 UTG: ['AA','KK','QQ','JJ','TT','99','88','77','AKs','AQs','AJs','ATs','A5s','A4s','A3s','KQs','KJs','KTs','QJs','QTs','JTs','T9s','98s','AKo','AQo'],
                 HJ: ['AA','KK','QQ','JJ','TT','99','88','77','66','55','AKs','AQs','AJs','ATs','A9s','A8s','A5s','A4s','A3s','A2s','KQs','KJs','KTs','K9s','QJs','QTs','Q9s','JTs','J9s','T9s','98s','87s','AKo','AQo','KQo'],
                 CO: ['AA','KK','QQ','JJ','TT','99','88','77','66','55','44','33','22','AKs','AQs','AJs','ATs','A9s','A8s','A7s','A6s','A5s','A4s','A3s','A2s','KQs','KJs','KTs','K9s','K8s','QJs','QTs','Q9s','JTs','J9s','T9s','T8s','98s','97s','87s','76s','65s','AKo','AQo','KQo','AJo','KJo','QJo'],
-                BTN: ['AA','KK','QQ','JJ','TT','99','88','77','66','55','44','33','22','AKs','AQs','AJs','ATs','A9s','A8s','A7s','A6s','A5s','A4s','A3s','A2s','KQs','KJs','KTs','K9s','K8s','K7s','K6s','K6s','K5s','K4s','K3s','K2s','QJs','QTs','Q9s','Q8s','Q7s','Q6s','JTs','J9s','J8s','J7s','T9s','T8s','T7s','98s','97s','87s','86s','76s','75s','65s','64s','54s','53s','43s','AKo','AQo','KQo','AJo','KJo','QJo','ATo','KTo','QTo','JTo'],
-                SB: ['AA','KK','QQ','JJ','TT','99','88','77','66','55','44','AKs','AQs','AJs','ATs','A9s','A8s','A7s','A6s','A5s','A4s','A2s','KQs','KJs','KTs','K9s','K8s','QJs','QTs','Q9s','JTs','J9s','T9s','T8s','98s','87s','76s','65s','AKo','AQo','KQo','AJo','KJo','QJo','ATo','KTo','QTo']
+                BTN: ['AA','KK','QQ','JJ','TT','99','88','77','66','55','44','33','22','AKs','AQs','AJs','ATs','A9s','A8s','A7s','A6s','A5s','A4s','A3s','A2s','KQs','KJs','KTs','K9s','K8s','K7s','K6s','K5s','K4s','K3s','K2s','QJs','QTs','Q9s','Q8s','Q7s','Q6s','JTs','J9s','J8s','J7s','T9s','T8s','T7s','98s','97s','87s','86s','76s','75s','65s','64s','54s','53s','43s','AKo','AQo','KQo','AJo','KJo','QJo','ATo','KTo','QTo','JTo'],
+                SB: ['AA','KK','QQ','JJ','TT','99','88','77','66','55','44','AKs','AQs','AJs','ATs','A9s','A8s','A7s','A6s','A5s','A4s','A3s','A2s','KQs','KJs','KTs','K9s','K8s','QJs','QTs','Q9s','JTs','J9s','T9s','T8s','98s','87s','76s','65s','AKo','AQo','KQo','AJo','KJo','QJo','ATo','KTo','QTo']
             },
             threeBet: {
-                'UTG_HJ':  { call: ['QQ','JJ','TT','99','88','77','AQs','AQo','KQs','QJs','JTs'], raise: ['AA','KK','AKs','AKo','A5s','A4s'], allin: [] },
-                'UTG_CO':  { call: ['QQ','JJ','TT','99','88','77','AQs','AQo','KQs','KJs','QJs','JTs'], raise: ['AA','KK','AKs','AKo','A5s','A4s'], allin: [] },
-                'UTG_BTN': { call: ['TT','99','88','77','66','KQs','KJs','QJs','JTs','AQo'],       raise: ['AA','KK','QQ','JJ','AKs','AQs','AKo','A5s','A4s','A3s','A2s','T9s','98s'], allin: [] },
-                'UTG_SB':  { call: [], raise: ['AA','KK','QQ','JJ','TT','AKs','AQs','KQs','KJs','QJs','AKo','AQo','A5s','A4s','A3s','A2s'], allin: [] },
-                'UTG_BB':  { call: ['JJ','TT','99','88','77','66','55','44','33','22','AQs','AJs','ATs','KQs','KJs','KTs','QJs','JTs','T9s','98s','87s','76s','AQo'], raise: ['AA','KK','QQ','AKs','AKo','A5s','A4s','A3s','A2s','K9s','Q9s','J9s'], allin: [] },
-                'HJ_CO':   { call: ['JJ','TT','99','88','77','AQs','KQs','KJs','QJs','JTs','AQo'], raise: ['AA','KK','QQ','AKs','AKo','A5s','A4s','A3s'], allin: [] },
-                'HJ_BTN':  { call: ['TT','99','88','77','66','KQs','KJs','QJs','JTs','AQo','KQo'], raise: ['AA','KK','QQ','JJ','AKs','AQs','AJs','AKo','A5s','A4s','A3s','A2s','T9s','98s'], allin: [] },
-                'HJ_SB':   { call: [], raise: ['AA','KK','QQ','JJ','TT','99','AKs','AQs','AJs','KQs','KJs','QJs','JTs','AKo','AQo','A5s','A4s','A3s'], allin: [] },
-                'HJ_BB':   { call: ['TT','99','88','77','66','55','44','33','22','AQs','AJs','ATs','A9s','KQs','KJs','KTs','QJs','QTs','JTs','J9s','T9s','98s','87s','76s','65s','AQo','KQo'], raise: ['AA','KK','QQ','JJ','AKs','AQs','AKo','A5s','A4s','A3s','A2s','K9s','Q9s'], allin: [] },
-                'CO_BTN':  { call: ['99','88','77','66','55','KQs','KJs','KTs','QJs','QTs','JTs','AQo','KQo'], raise: ['AA','KK','QQ','JJ','TT','AKs','AQs','AJs','ATs','AKo','A5s','A4s','A3s','A2s','T9s','98s','87s'], allin: [] },
-                'CO_SB':   { call: [], raise: ['AA','KK','QQ','JJ','TT','99','88','AKs','AQs','AJs','ATs','KQs','KJs','K9s','QJs','QTs','JTs','AKo','AQo','A5s','A4s','A3s'], allin: [] },
-                'CO_BB':   { call: ['99','88','77','66','55','44','33','22','AQs','AJs','ATs','A9s','A8s','KQs','KJs','KTs','QJs','QTs','JTs','T9s','T8s','98s','97s','87s','76s','65s','AQo','KQo','AJo','KJo','QJo'], raise: ['AA','KK','QQ','JJ','TT','AKs','AQs','AJs','AKo','A5s','A4s','A3s','A2s','K9s','Q9s','J9s','T9s'], allin: [] },
-                'BTN_SB':  { call: [], raise: ['AA','KK','QQ','JJ','TT','99','88','77','66','AKs','AQs','AJs','ATs','A9s','KQs','KJs','KTs','QJs','QTs','JTs','AKo','AQo','KQo','AJo','A5s','A4s','A3s','A2s','K9s','Q9s','J9s','T9s'], allin: [] },
-                'BTN_BB':  { call: ['88','77','66','55','44','33','22','AJs','ATs','A9s','A8s','A7s','KQs','KJs','KTs','K9s','QJs','QTs','Q9s','JTs','J9s','T9s','T8s','98s','97s','87s','86s','76s','65s','54s','AQo','KQo','AJo','KJo','QJo','ATo','KTo','QTo','JTo'], raise: ['AA','KK','QQ','JJ','TT','99','AKs','AQs','AKo','A5s','A4s','A3s','A2s','K8s','K7s','Q8s','J8s','T7s','96s','85s','74s','64s','53s'], allin: [] },
-                'SB_BB':   { call: ['TT','99','88','77','66','55','44','33','22','AJs','ATs','A9s','A8s','A7s','A6s','KQs','KJs','KTs','K9s','K8s','QJs','QTs','Q9s','JTs','J9s','T9s','T8s','98s','97s','87s','86s','76s','75s','65s','64s','54s','53s','43s','AQo','KQo','AJo','KJo','QJo','ATo','KTo','QTo','JTo'], raise: ['AA','KK','QQ','JJ','AKs','AQs','AKo','A5s','A4s','A3s','A2s','K7s','K6s','Q8s','J8s','T7s','96s','85s'], allin: [] }
+                'UTG_HJ':  { call: ['QQ','JJ','TT','99','88','77','AQs','AQo','KQs','QJs','JTs'], raise: ['AA','KK','AKs','AKo'], bluff: ['A5s','A4s'], allin: [] },
+                'UTG_CO':  { call: ['QQ','JJ','TT','99','88','77','AQs','AQo','KQs','KJs','QJs','JTs'], raise: ['AA','KK','AKs','AKo'], bluff: ['A5s','A4s'], allin: [] },
+                'UTG_BTN': { call: ['TT','99','88','77','66','KQs','KJs','QJs','JTs','AQo'],       raise: ['AA','KK','QQ','JJ','AKs','AQs','AKo'], bluff: ['A5s','A4s','A3s','A2s','T9s','98s'], allin: [] },
+                'UTG_SB':  { call: [], raise: ['AA','KK','QQ','JJ','TT','AKs','AQs','KQs','KJs','QJs','AKo','AQo'], bluff: ['A5s','A4s','A3s','A2s'], allin: [] },
+                'UTG_BB':  { call: ['JJ','TT','99','88','77','66','55','44','33','22','AQs','AJs','ATs','KQs','KJs','KTs','QJs','JTs','T9s','98s','87s','76s','AQo'], raise: ['AA','KK','QQ','AKs','AKo'], bluff: ['A5s','A4s','A3s','A2s','K9s','Q9s','J9s'], allin: [] },
+                'HJ_CO':   { call: ['JJ','TT','99','88','77','AQs','KQs','KJs','QJs','JTs','AQo'], raise: ['AA','KK','QQ','AKs','AKo'], bluff: ['A5s','A4s','A3s'], allin: [] },
+                'HJ_BTN':  { call: ['TT','99','88','77','66','KQs','KJs','QJs','JTs','AQo','KQo'], raise: ['AA','KK','QQ','JJ','AKs','AQs','AJs','AKo'], bluff: ['A5s','A4s','A3s','A2s','T9s','98s'], allin: [] },
+                'HJ_SB':   { call: [], raise: ['AA','KK','QQ','JJ','TT','99','AKs','AQs','AJs','KQs','KJs','QJs','JTs','AKo','AQo'], bluff: ['A5s','A4s','A3s'], allin: [] },
+                'HJ_BB':   { call: ['TT','99','88','77','66','55','44','33','22','AQs','AJs','ATs','A9s','KQs','KJs','KTs','QJs','QTs','JTs','J9s','T9s','98s','87s','76s','65s','AQo','KQo'], raise: ['AA','KK','QQ','JJ','AKs','AQs','AKo'], bluff: ['A5s','A4s','A3s','A2s','K9s','Q9s'], allin: [] },
+                'CO_BTN':  { call: ['99','88','77','66','55','KQs','KJs','KTs','QJs','QTs','JTs','AQo','KQo'], raise: ['AA','KK','QQ','JJ','TT','AKs','AQs','AJs','ATs','AKo'], bluff: ['A5s','A4s','A3s','A2s','T9s','98s','87s'], allin: [] },
+                'CO_SB':   { call: [], raise: ['AA','KK','QQ','JJ','TT','99','88','AKs','AQs','AJs','ATs','KQs','KJs','AKo','AQo'], bluff: ['K9s','QJs','QTs','JTs','A5s','A4s','A3s'], allin: [] },
+                'CO_BB':   { call: ['99','88','77','66','55','44','33','22','AQs','AJs','ATs','A9s','A8s','KQs','KJs','KTs','QJs','QTs','JTs','T9s','T8s','98s','97s','87s','76s','65s','AQo','KQo','AJo','KJo','QJo'], raise: ['AA','KK','QQ','JJ','TT','AKs','AQs','AJs','AKo'], bluff: ['A5s','A4s','A3s','A2s','K9s','Q9s','J9s','T9s'], allin: [] },
+                'BTN_SB':  { call: [], raise: ['AA','KK','QQ','JJ','TT','99','88','77','66','AKs','AQs','AJs','ATs','AKo','AQo'], bluff: ['A9s','KQs','KJs','KTs','QJs','QTs','JTs','KQo','AJo','A5s','A4s','A3s','A2s','K9s','Q9s','J9s','T9s'], allin: [] },
+                'BTN_BB':  { call: ['88','77','66','55','44','33','22','AJs','ATs','A9s','A8s','A7s','KQs','KJs','KTs','K9s','QJs','QTs','Q9s','JTs','J9s','T9s','T8s','98s','97s','87s','86s','76s','65s','54s','AQo','KQo','AJo','KJo','QJo','ATo','KTo','QTo','JTo'], raise: ['AA','KK','QQ','JJ','TT','99','AKs','AQs','AKo'], bluff: ['A5s','A4s','A3s','A2s','K8s','K7s','Q8s','J8s','T7s','96s','85s','74s','64s','53s'], allin: [] },
+                'SB_BB':   { call: ['TT','99','88','77','66','55','44','33','22','AJs','ATs','A9s','A8s','A7s','A6s','KQs','KJs','KTs','K9s','K8s','QJs','QTs','Q9s','JTs','J9s','T9s','T8s','98s','97s','87s','86s','76s','75s','65s','64s','54s','53s','43s','AQo','KQo','AJo','KJo','QJo','ATo','KTo','QTo','JTo'], raise: ['AA','KK','QQ','JJ','AKs','AQs','AKo'], bluff: ['A5s','A4s','A3s','A2s','K7s','K6s','Q8s','J8s','T7s','96s','85s'], allin: [] }
             },
             vs3bet: {
-                'UTG_HJ':  { call: ['QQ','JJ','TT','AQs','KQs','AKo'], raise: ['AA','KK','AKs','A5s'], allin: [] },
-                'UTG_CO':  { call: ['QQ','JJ','TT','AQs','KQs','AKo'], raise: ['AA','KK','AKs','A5s'], allin: [] },
-                'UTG_BTN': { call: ['QQ','JJ','TT','AQs','KQs','AKo'], raise: ['AA','KK','AKs','A5s'], allin: [] },
-                'UTG_SB':  { call: ['QQ','JJ','TT','AQs','AKo'],       raise: ['AA','KK','AKs'],       allin: [] },
-                'UTG_BB':  { call: ['QQ','JJ','TT','AQs','AKo'],       raise: ['AA','KK','AKs'],       allin: [] },
-                'HJ_UTG':  { call: ['QQ','JJ','TT','AQs'],             raise: ['AA','KK','AKs'],       allin: [] },
-                'HJ_CO':   { call: ['QQ','JJ','TT','AQs','KQs','AKo'], raise: ['AA','KK','AKs','A5s'], allin: [] },
-                'HJ_BTN':  { call: ['QQ','JJ','TT','AQs','KQs','AKo'], raise: ['AA','KK','AKs','A5s'], allin: [] },
-                'HJ_SB':   { call: ['QQ','JJ','TT','AQs','KQs','AKo'], raise: ['AA','KK','AKs','A4s'], allin: [] },
-                'HJ_BB':   { call: ['QQ','JJ','TT','AQs','KQs','AKo'], raise: ['AA','KK','AKs','A4s'], allin: [] },
-                'CO_UTG':  { call: ['QQ','JJ','AQs'],                   raise: ['AA','KK','AKs'],       allin: [] },
-                'CO_HJ':   { call: ['QQ','JJ','TT','AQs','KQs'],       raise: ['AA','KK','AKs','A5s'], allin: [] },
-                'CO_BTN':  { call: ['QQ','JJ','TT','99','AQs','KQs','JTs','AKo'], raise: ['AA','KK','AKs','A5s','A4s'], allin: [] },
-                'CO_SB':   { call: ['QQ','JJ','TT','AQs','KQs','AKo'], raise: ['AA','KK','AKs','A5s','A4s'], allin: [] },
-                'CO_BB':   { call: ['QQ','JJ','TT','AQs','KQs','AKo'], raise: ['AA','KK','AKs','A5s','A4s'], allin: [] },
-                'BTN_UTG': { call: ['QQ','JJ','AQs'],                   raise: ['AA','KK','AKs'],       allin: [] },
-                'BTN_HJ':  { call: ['QQ','JJ','AQs','KQs'],             raise: ['AA','KK','AKs','A5s'], allin: [] },
-                'BTN_CO':  { call: ['QQ','JJ','TT','AQs','KQs','JTs'], raise: ['AA','KK','AKs','A5s','A4s'], allin: [] },
-                'BTN_SB':  { call: ['QQ','JJ','TT','99','88','AQs','AJs','KQs','KJs','QJs','JTs','T9s','AKo','AQo'], raise: ['AA','KK','AKs','A5s','A4s','A3s','A2s'], allin: [] },
-                'BTN_BB':  { call: ['QQ','JJ','TT','99','88','AQs','AJs','KQs','KJs','QJs','JTs','T9s','AKo','AQo'], raise: ['AA','KK','AKs','A5s','A4s','A3s','A2s'], allin: [] },
-                'SB_UTG':  { call: ['QQ','AQs'],                       raise: ['AA','KK','AKs'],       allin: [] },
-                'SB_HJ':   { call: ['QQ','JJ','AQs'],                   raise: ['AA','KK','AKs'],       allin: [] },
-                'SB_CO':   { call: ['QQ','JJ','TT','AQs','KQs'],       raise: ['AA','KK','AKs','A5s'], allin: [] },
-                'SB_BTN':  { call: ['QQ','JJ','TT','99','AQs','KQs'],   raise: ['AA','KK','AKs','A5s','A4s'], allin: [] },
-                'SB_BB':   { call: ['QQ','JJ','TT','99','88','77','AQs','AJs','ATs','KQs','KJs','QJs','JTs','AKo','AQo'], raise: ['AA','KK','QQ','AKs','A5s','A4s','A3s'], allin: [] }
+                'UTG_HJ':  { call: ['QQ','JJ','TT','99','AQs','AJs','KQs','AKo'],       raise: ['AA','KK','AKs'], bluff: ['A5s','A4s'], allin: [] },
+                'UTG_CO':  { call: ['QQ','JJ','TT','99','AQs','AJs','KQs','AKo'],       raise: ['AA','KK','AKs'], bluff: ['A5s','A4s'], allin: [] },
+                'UTG_BTN': { call: ['QQ','JJ','TT','99','AQs','AJs','KQs','KTs','AKo'], raise: ['AA','KK','AKs'], bluff: ['A5s','A4s','KJs'], allin: [] },
+                'UTG_SB':  { call: ['QQ','JJ','TT','99','AQs','AKo'],                 raise: ['AA','KK','AKs'], bluff: ['A5s'], allin: [] },
+                'UTG_BB':  { call: ['QQ','JJ','TT','99','AQs','AKo'],                 raise: ['AA','KK','AKs'], bluff: ['A5s'], allin: [] },
+                'HJ_UTG':  { call: ['QQ','JJ','TT','AQs','KQs'],                   raise: ['AA','KK','AKs'], bluff: [], allin: [] },
+                'HJ_CO':   { call: ['QQ','JJ','TT','99','AQs','AJs','KQs','AKo'],       raise: ['AA','KK','AKs'], bluff: ['A5s','A4s'], allin: [] },
+                'HJ_BTN':  { call: ['QQ','JJ','TT','99','88','AQs','AJs','KQs','KTs','QJs','AKo'], raise: ['AA','KK','AKs'], bluff: ['A5s','A4s','KJs'], allin: [] },
+                'HJ_SB':   { call: ['QQ','JJ','TT','99','AQs','KQs','AKo'],           raise: ['AA','KK','AKs'], bluff: ['A5s','A4s'], allin: [] },
+                'HJ_BB':   { call: ['QQ','JJ','TT','99','AQs','KQs','AKo'],           raise: ['AA','KK','AKs'], bluff: ['A5s','A4s'], allin: [] },
+                'CO_UTG':  { call: ['QQ','JJ','TT','AQs','KQs'],                   raise: ['AA','KK','AKs'], bluff: [], allin: [] },
+                'CO_HJ':   { call: ['QQ','JJ','TT','AQs','KQs'],                   raise: ['AA','KK','AKs'], bluff: ['A5s'], allin: [] },
+                'CO_BTN':  { call: ['QQ','JJ','TT','99','88','77','AQs','AJs','ATs','KQs','KJs','QJs','JTs','AKo','AQo'], raise: ['AA','KK','AKs'], bluff: ['A5s','A4s','K9s'], allin: [] },
+                'CO_SB':   { call: ['QQ','JJ','TT','99','88','AQs','AJs','KQs','AKo'], raise: ['AA','KK','AKs'], bluff: ['A5s','A4s','A3s'], allin: [] },
+                'CO_BB':   { call: ['QQ','JJ','TT','99','88','AQs','AJs','KQs','AKo'], raise: ['AA','KK','AKs'], bluff: ['A5s','A4s','A3s'], allin: [] },
+                'BTN_UTG': { call: ['QQ','JJ','AQs','KQs'],                       raise: ['AA','KK','AKs'], bluff: [], allin: [] },
+                'BTN_HJ':  { call: ['QQ','JJ','TT','AQs','KQs','QJs'],             raise: ['AA','KK','AKs'], bluff: ['A5s'], allin: [] },
+                'BTN_CO':  { call: ['QQ','JJ','TT','99','AQs','AJs','KQs','QJs','JTs'], raise: ['AA','KK','AKs'], bluff: ['A5s','A4s'], allin: [] },
+                'BTN_SB':  { call: ['QQ','JJ','TT','99','88','77','66','AQs','AJs','ATs','A9s','KQs','KJs','KTs','QJs','QTs','JTs','T9s','AKo','AQo','KQo'], raise: ['AA','KK','AKs'], bluff: ['A5s','A4s','A3s','A2s','K9s','Q9s'], allin: [] },
+                'BTN_BB':  { call: ['QQ','JJ','TT','99','88','77','66','AQs','AJs','ATs','A9s','KQs','KJs','KTs','QJs','QTs','JTs','T9s','AKo','AQo','KQo'], raise: ['AA','KK','AKs'], bluff: ['A5s','A4s','A3s','A2s','K9s','Q9s'], allin: [] },
+                'SB_UTG':  { call: ['QQ','AQs'],                             raise: ['AA','KK','AKs'], bluff: [], allin: [] },
+                'SB_HJ':   { call: ['QQ','JJ','AQs'],                         raise: ['AA','KK','AKs'], bluff: [], allin: [] },
+                'SB_CO':   { call: ['QQ','JJ','TT','AQs','KQs'],               raise: ['AA','KK','AKs'], bluff: ['A5s'], allin: [] },
+                'SB_BTN':  { call: ['QQ','JJ','TT','99','AQs','AJs','KQs'],       raise: ['AA','KK','AKs'], bluff: ['A5s','A4s'], allin: [] },
+                'SB_BB':   { call: ['QQ','JJ','TT','99','88','77','66','AQs','AJs','ATs','KQs','KJs','QJs','JTs','AKo','AQo','KQo'], raise: ['AA','KK','QQ','AKs'], bluff: ['A5s','A4s','A3s'], allin: [] }
             },
             vs4bet: {
-                'HJ_UTG':  { call: ['KK','QQ','AKs'],                 raise: [],                      allin: ['AA'] },
-                'CO_UTG':  { call: ['KK','QQ','AKs'],                 raise: [],                      allin: ['AA'] },
-                'CO_HJ':   { call: ['KK','QQ','JJ','AKs'],             raise: [],                      allin: ['AA'] },
-                'BTN_UTG': { call: ['KK','AKs'],                      raise: [],                      allin: ['AA'] },
-                'BTN_HJ':  { call: ['KK','QQ','AKs'],                 raise: [],                      allin: ['AA'] },
-                'BTN_CO':  { call: ['KK','QQ','JJ','AKs','AQs'],       raise: [],                      allin: ['AA','A5s'] },
-                'SB_UTG':  { call: ['KK','AKs'],                      raise: [],                      allin: ['AA'] },
-                'SB_HJ':   { call: ['KK','QQ','AKs'],                 raise: [],                      allin: ['AA'] },
-                'SB_CO':   { call: ['KK','QQ','JJ','AKs'],             raise: [],                      allin: ['AA'] },
-                'SB_BTN':  { call: ['KK','QQ','JJ','TT','AKs','AQs','KQs','AKo'], raise: [],          allin: ['AA','A5s','A4s'] },
-                'BB_UTG':  { call: ['KK','AKs'],                      raise: [],                      allin: ['AA'] },
-                'BB_HJ':   { call: ['KK','QQ','AKs'],                 raise: [],                      allin: ['AA'] },
-                'BB_CO':   { call: ['KK','QQ','JJ','AKs'],             raise: [],                      allin: ['AA'] },
-                'BB_BTN':  { call: ['KK','QQ','JJ','TT','AKs','AQs','KQs','AKo'], raise: [],          allin: ['AA','A5s','A4s'] },
-                'BB_SB':   { call: ['KK','QQ','JJ','TT','AKs','AQs','KQs','AKo'], raise: [],          allin: ['AA','A5s'] }
+                'HJ_UTG':  { call: ['KK','QQ','AKs'],                 raise: [], bluff: [], allin: ['AA'] },
+                'CO_UTG':  { call: ['KK','QQ','AKs'],                 raise: [], bluff: [], allin: ['AA'] },
+                'CO_HJ':   { call: ['KK','QQ','JJ','AKs'],             raise: [], bluff: [], allin: ['AA','AKo'] },
+                'BTN_UTG': { call: ['KK','AKs'],                      raise: [], bluff: [], allin: ['AA'] },
+                'BTN_HJ':  { call: ['KK','QQ','AKs'],                 raise: [], bluff: [], allin: ['AA','AKo'] },
+                'BTN_CO':  { call: ['KK','QQ','JJ','AKs','AQs','AKo'], raise: [], bluff: ['A5s','A4s'], allin: ['AA'] },
+                'SB_UTG':  { call: ['QQ','AKs'],                      raise: [], bluff: [], allin: ['AA','KK'] },
+                'SB_HJ':   { call: ['QQ','JJ','AKs'],                 raise: [], bluff: [], allin: ['AA','KK','AKo'] },
+                'SB_CO':   { call: ['QQ','JJ','TT','AKs','AQs'],       raise: [], bluff: ['A5s'], allin: ['AA','KK','AKo'] },
+                'SB_BTN':  { call: ['QQ','JJ','TT','99','AKs','AQs','KQs','AKo','AQo'], raise: [], bluff: ['A5s','A4s','A3s'], allin: ['AA','KK'] },
+                'BB_UTG':  { call: ['QQ','JJ','AKs'],                 raise: [], bluff: [], allin: ['AA','KK'] },
+                'BB_HJ':   { call: ['QQ','JJ','AKs'],                 raise: [], bluff: [], allin: ['AA','KK'] },
+                'BB_CO':   { call: ['QQ','JJ','TT','AKs','AQs'],       raise: [], bluff: [], allin: ['AA','KK','AKo'] },
+                'BB_BTN':  { call: ['QQ','JJ','TT','99','AKs','AQs','KQs','AKo'], raise: [], bluff: ['A5s','A4s'], allin: ['AA','KK'] },
+                'BB_SB':   { call: ['QQ','JJ','TT','99','88','AKs','AQs','KQs','AKo','AQo'], raise: [], bluff: ['A5s','A4s'], allin: ['AA','KK'] }
             }
         };
 
@@ -180,20 +183,12 @@
             if (!container) return;
             container.innerHTML = '';
 
-            const allPos = ['UTG', 'HJ', 'CO', 'BTN', 'SB', 'BB'];
             let allowedOpp = [];
+            if (currentSituation === 'open') return;
+            else if (currentSituation === 'threeBet') allowedOpp = ['UTG', 'HJ', 'CO', 'BTN', 'SB'];
+            else allowedOpp = ['HJ', 'CO', 'BTN', 'SB', 'BB'];
 
-            if (currentSituation === 'open') {
-                return;
-            } else if (currentSituation === 'threeBet') {
-                allowedOpp = ['UTG', 'HJ', 'CO', 'BTN', 'SB'];
-            } else {
-                allowedOpp = ['HJ', 'CO', 'BTN', 'SB', 'BB'];
-            }
-
-            if (!allowedOpp.includes(currentOpPos)) {
-                currentOpPos = allowedOpp[0];
-            }
+            if (!allowedOpp.includes(currentOpPos)) currentOpPos = allowedOpp[0];
 
             allowedOpp.forEach(pos => {
                 const btn = document.createElement('button');
@@ -227,9 +222,7 @@
                 if (allowedMy.length === 0) allowedMy = ['UTG'];
             }
 
-            if (!allowedMy.includes(currentMyPos)) {
-                currentMyPos = allowedMy[0];
-            }
+            if (!allowedMy.includes(currentMyPos)) currentMyPos = allowedMy[0];
 
             allowedMy.forEach(pos => {
                 const btn = document.createElement('button');
@@ -270,34 +263,37 @@
             if (sit === 'open') {
                 currentMyPos = 'UTG';
             } else if (sit === 'threeBet') {
-                currentOpPos = 'UTG';
-                currentMyPos = 'HJ';
+                currentOpPos = 'UTG'; currentMyPos = 'HJ';
             } else {
-                currentOpPos = 'HJ';
-                currentMyPos = 'UTG';
+                currentOpPos = 'HJ'; currentMyPos = 'UTG';
             }
 
             renderSelectors();
 
             const oppRow = document.getElementById('oppositon-row');
             const legRaise = document.getElementById('leg-raise');
+            const legBluff = document.getElementById('leg-bluff');
             const legAllin = document.getElementById('leg-allin');
             const legCall = document.getElementById('leg-call');
 
             if (sit === 'open') {
                 if(oppRow) oppRow.style.display = 'none';
                 legCall.style.display = 'none';
+                legBluff.style.display = 'none';
                 legAllin.style.display = 'none';
                 legRaise.innerHTML = '<div class="dot" style="background:var(--raise)"></div>Open';
             } else {
                 if(oppRow) oppRow.style.display = 'flex';
                 legCall.style.display = 'flex';
+                legBluff.style.display = 'flex';
                 legAllin.style.display = (sit === 'vs4bet') ? 'flex' : 'none';
                 
                 if (sit === 'threeBet') {
-                    legRaise.innerHTML = '<div class="dot" style="background:var(--raise)"></div>3-Bet';
+                    legRaise.innerHTML = '<div class="dot" style="background:var(--raise)"></div>3B Value';
+                    legBluff.innerHTML = '<div class="dot" style="background:var(--bluff)"></div>3B Bluff';
                 } else {
-                    legRaise.innerHTML = '<div class="dot" style="background:var(--raise)"></div>4-Bet';
+                    legRaise.innerHTML = '<div class="dot" style="background:var(--raise)"></div>4B Value';
+                    legBluff.innerHTML = '<div class="dot" style="background:var(--bluff)"></div>4B Bluff';
                 }
             }
             updateDisplay();
@@ -317,7 +313,6 @@
         }
 
         function updateDisplay() {
-            // グリッドの全初期化（フォールドカラーに戻す）
             matrixCells.forEach(hand => {
                 const el = document.getElementById('hand-' + hand);
                 el.style.background = 'var(--fold)';
@@ -330,18 +325,12 @@
                     if (el) el.style.background = 'var(--raise)';
                 });
             } else {
-                // 🌟ここを完全修正！データ定義の「ねじれ」をここで綺麗にハンドリング
-                let key = '';
-                if (currentSituation === 'threeBet') {
-                    key = `${currentOpPos}_${currentMyPos}`; // threeBetデータは OPP_MY の並び順
-                } else {
-                    key = `${currentMyPos}_${currentOpPos}`; // vs3bet, vs4betデータは MY_OPP の並び順
-                }
-                
-                const data = rangeData[currentSituation][key] || { call: [], raise: [], allin: [] };
+                let key = (currentSituation === 'threeBet') ? `${currentOpPos}_${currentMyPos}` : `${currentMyPos}_${currentOpPos}`;
+                const data = rangeData[currentSituation][key] || { call: [], raise: [], bluff: [], allin: [] };
 
                 (data.call || []).forEach(h => { const el = document.getElementById('hand-' + h); if(el) el.style.background = 'var(--call)'; });
                 (data.raise || []).forEach(h => { const el = document.getElementById('hand-' + h); if(el) el.style.background = 'var(--raise)'; });
+                (data.bluff || []).forEach(h => { const el = document.getElementById('hand-' + h); if(el) el.style.background = 'var(--bluff)'; });
                 (data.allin || []).forEach(h => { const el = document.getElementById('hand-' + h); if(el) el.style.background = 'var(--allin)'; });
             }
         }
