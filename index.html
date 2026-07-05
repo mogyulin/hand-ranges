@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LUNA Hacker - Poker Range</title>
+    <style>
+        :root {
+            --bg-color: #121214;
+            --card-bg: #1e1e24;
+            --text-color: #e2e8f0;
+            --primary: #8b5cf6;
+            --fold: #334155;
+            --call: #10b981;
+            --raise: #ef4444;
+            --allin: #f59e0b;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-user-select: none; user-select: none; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--bg-color); color: var(--text-color); padding: 10px; min-height: 100vh; display: flex; flex-direction: column; }
+        h1 { font-size: 1.2rem; text-align: center; margin-bottom: 10px; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; }
+        
+        /* セレクターエリア */
+        .selector-container { display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; background: var(--card-bg); padding: 10px; border-radius: 8px; }
+        .row { display: flex; align-items: center; gap: 10px; }
+        .row-label { font-size: 0.8rem; font-weight: bold; width: 60px; color: #94a3b8; }
+        .btn-group { display: flex; flex-wrap: wrap; gap: 5px; flex: 1; }
+        button { background: #2d2d39; color: #94a3b8; border: none; padding: 6px 12px; font-size: 0.8rem; font-weight: bold; border-radius: 4px; cursor: pointer; transition: all 0.2s; }
+        button.active { background: var(--primary); color: #fff; }
+
+        /* 凡例 */
+        .legend { display: flex; justify-content: center; gap: 15px; margin-bottom: 10px; font-size: 0.75rem; }
+        .legend-item { display: flex; align-items: center; gap: 4px; }
+        .dot { width: 12px; height: 12px; border-radius: 2px; }
+
+        /* 13x13 グリッド */
+        .grid-container { display: flex; justify-content: center; align-items: center; flex: 1; margin-bottom: 10px; }
+        .grid { display: grid; grid-template-columns: repeat(13, 1fr); gap: 1px; width: 100%; max-width: 400px; aspect-ratio: 1; background: #2d2d39; border: 1px solid #2d2d39; }
+        .cell { display: flex; justify-content: center; align-items: center; font-size: 0.6rem; font-weight: bold; color: #fff; background: var(--fold); aspect-ratio: 1; border-radius: 1px; text-shadow: 1px 1px 1px rgba(0,0,0,0.5); }
+    </style>
+</head>
+<body>
+
+    <h1>LUNA Hacker Range</h1>
+
+    <div class="selector-container">
+        <!-- ① シチュエーション選択 -->
+        <div class="row">
+            <div class="row-label">SITUATION</div>
+            <div class="btn-group" id="situation-group">
+                <button class="active" onclick="setSituation('open')">OPEN</button>
+                <button onclick="setSituation('vs3bet')">Vs 3-BET</button>
+                <button onclick="setSituation('vs4bet')">Vs 4-BET</button>
+            </div>
+        </div>
+        <!-- ② 自分のポジション -->
+        <div class="row">
+            <div class="row-label">MY POS</div>
+            <div class="btn-group" id="mypos-group">
+                <button class="active" onclick="setMyPos('UTG')">UTG</button>
+                <button onclick="setMyPos('HJ')">HJ</button>
+                <button onclick="setMyPos('CO')">CO</button>
+                <button onclick="setMyPos('BTN')">BTN</button>
+                <button onclick="setMyPos('SB')">SB</button>
+            </div>
+        </div>
+        <!-- ③ 相手のポジション (状況に応じて動的変化) -->
+        <div class="row" id="oppositon-row" style="display:none;">
+            <div class="row-label">OPP POS</div>
+            <div class="btn-group" id="oppos-group">
+                <!-- JSで動的にボタンを生成 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 凡例 -->
+    <div class="legend">
+        <div class="legend-item"><div class="dot" style="background:var(--fold)"></div>Fold/Pure</div>
+        <div class="legend-item" id="leg-call"><div class="dot" style="background:var(--call)"></div>Call</div>
+        <div class="legend-item" id="leg-raise"><div class="dot" style="background:var(--raise)"></div>Raise/4B</div>
+        <div class="legend-item" id="leg-allin" style="display:none;"><div class="dot" style="background:var(--allin)"></div>5B All-in</div>
+    </div>
+
+    <!-- グリッド表示 -->
+    <div class="grid-container">
+        <div class="grid" id="matrix"></div>
+    </div>
+
+    <script>
+        // 13x13のマトリックス用の文字列表を作成
+        const ranks = ['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2'];
+        const matrixCells = [];
+        for (let r = 0; r < 13; r++) {
+            for (let c = 0; c < 13; c++) {
+                if (r < c) matrixCells.push(ranks[r] + ranks[c] + 's');
+                else if (r > c) matrixCells.push(ranks[c] + ranks[r] + 'o');
+                else matrixCells.push(ranks[r] + ranks[c]);
+            }
+        }
+
+        // 現在の選択状態
+        let currentSituation = 'open';
+        let currentMyPos = 'UTG';
+        let currentOpPos = '';
+
+        // --- データ構造（ここにGTOレンジのデータを1つずつ格納していく） ---
+        const rangeData = {
+            open: {
+                UTG: ['AA','KK','QQ','JJ','TT','99','88','77','AKs','AQs','AJs','ATs','A5s','A4s','A3s','KQs','KJs','KTs','QJs','QTs','JTs','T9s','98s','AKo','AQo'],
+                HJ: ['AA','KK','QQ','JJ','TT','99','88','77','66','55','AKs','AQs','AJs','ATs','A9s','A8s','A5s','A4s','A3s','A2s','KQs','KJs','KTs','K9s','QJs','QTs','Q9s','JTs','J9s','T9s','98s','87s','AKo','AQo','KQo'],
+                CO: [], // 後ほど追加
+                BTN: [], // 後ほど追加
+                SB: []  // 後ほど追加
+            },
+            vs3bet: {
+                // 例: 自分がUTGでオープンして、BTNから3-betを喰らった時のレンジ
+                // 'CALL' と 'RAISE(4B)' と 'ALLIN(5B)' を分けて管理できるようにする
+                'UTG_BTN': { call: ['QQ','JJ','TT','AKo'], raise: ['AA','KK','AKs'], allin: [] }
+            },
+            vs4bet: {
+                // 例: 自分がBTNで3-betして、UTGから4-betが飛んできた時
+                'BTN_UTG': { call: [], raise: [], allin: ['AA','AKs'] }
+            }
+        };
+
+        // 画面の初期化
+        function initGrid() {
+            const grid = document.getElementById('matrix');
+            grid.innerHTML = '';
+            matrixCells.forEach(hand => {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.id = 'hand-' + hand;
+                cell.innerText = hand;
+                grid.appendChild(cell);
+            });
+            updateDisplay();
+        }
+
+        // シチュエーション切り替え
+        function setSituation(sit) {
+            currentSituation = sit;
+            setActive('situation-group', event.target);
+            
+            const oppRow = document.getElementById('oppositon-row');
+            if (sit === 'open') {
+                oppRow.style.display = 'none';
+                document.getElementById('leg-call').style.display = 'none';
+                document.getElementById('leg-allin').style.display = 'none';
+                document.getElementById('leg-raise').innerText = 'Open';
+            } else {
+                oppRow.style.display = 'flex';
+                document.getElementById('leg-call').style.display = 'flex';
+                document.getElementById('leg-allin').style.display = 'flex';
+                document.getElementById('leg-raise').innerText = '4-Bet';
+                updateOpponentButtons();
+            }
+            updateDisplay();
+        }
+
+        // 自分のポジション切り替え
+        function setMyPos(pos) {
+            currentMyPos = pos;
+            setActive('mypos-group', event.target);
+            if (currentSituation !== 'open') {
+                updateOpponentButtons();
+            }
+            updateDisplay();
+        }
+
+        // 相手のポジション切り替え
+        function setOpPos(pos) {
+            currentOpPos = pos;
+            setActive('oppos-group', event.target);
+            updateDisplay();
+        }
+
+        // 相手ポジションのボタンを動的に生成
+        function updateOpponentButtons() {
+            const container = document.getElementById('oppos-group');
+            container.innerHTML = '';
+            const allPos = ['UTG', 'HJ', 'CO', 'BTN', 'SB', 'BB'];
+            
+            // 自分以外のポジションをボタンにする
+            const oppPositions = allPos.filter(p => p !== currentMyPos);
+            oppPositions.forEach((pos, idx) => {
+                const btn = document.createElement('button');
+                btn.innerText = pos;
+                if (idx === 0) {
+                    btn.className = 'active';
+                    currentOpPos = pos;
+                }
+                btn.onclick = () => setOpPos(pos);
+                container.appendChild(btn);
+            });
+        }
+
+        // アクティブクラスの切り替え
+        function setActive(groupId, targetButton) {
+            const group = document.getElementById(groupId);
+            group.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+            targetButton.classList.add('active');
+        }
+
+        // マトリックスの色を更新
+        function updateDisplay() {
+            // 一旦すべてFoldの色（グレー）にする
+            matrixCells.forEach(hand => {
+                const el = document.getElementById('hand-' + hand);
+                el.style.background = 'var(--fold)';
+            });
+
+            if (currentSituation === 'open') {
+                // オープンレンジの表示
+                const hands = rangeData.open[currentMyPos] || [];
+                hands.forEach(hand => {
+                    const el = document.getElementById('hand-' + hand);
+                    if (el) el.style.background = 'var(--raise)';
+                });
+            } else {
+                // Vs 3bet / 4bet の表示
+                const key = `${currentMyPos}_${currentOpPos}`;
+                const data = rangeData[currentSituation][key] || { call: [], raise: [], allin: [] };
+
+                (data.call || []).forEach(h => { const el = document.getElementById('hand-' + h); if(el) el.style.background = 'var(--call)'; });
+                (data.raise || []).forEach(h => { const el = document.getElementById('hand-' + h); if(el) el.style.background = 'var(--raise)'; });
+                (data.allin || []).forEach(h => { const el = document.getElementById('hand-' + h); if(el) el.style.background = 'var(--allin)'; });
+            }
+        }
+
+        // 起動
+        initGrid();
+    </script>
+</body>
+</html>
+
+
+
+
+
+
