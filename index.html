@@ -48,6 +48,7 @@
             <div class="row-label">SITUATION</div>
             <div class="btn-group" id="situation-group">
                 <button class="active" onclick="setSituation('open')">OPEN</button>
+                <button onclick="setSituation('threeBet')">3-BET</button>
                 <button onclick="setSituation('vs3bet')">Vs 3-BET</button>
                 <button onclick="setSituation('vs4bet')">Vs 4-BET</button>
             </div>
@@ -219,8 +220,9 @@ const rangeData = {
             } else {
                 oppRow.style.display = 'flex';
                 document.getElementById('leg-call').style.display = 'flex';
-                document.getElementById('leg-allin').style.display = 'flex';
-                document.getElementById('leg-raise').innerText = '4-Bet';
+                // vs4betの時だけ5B All-inの凡例を出す
+                document.getElementById('leg-allin').style.display = (sit === 'vs4bet') ? 'flex' : 'none';
+                document.getElementById('leg-raise').innerText = (sit === 'threeBet') ? '3-Bet' : '4-Bet';
                 updateOpponentButtons();
             }
             updateDisplay();
@@ -286,8 +288,13 @@ const rangeData = {
                     if (el) el.style.background = 'var(--raise)';
                 });
             } else {
-                // Vs 3bet / 4bet の表示
-                const key = `${currentMyPos}_${currentOpPos}`;
+                // 3bet / Vs 3bet / Vs 4bet の表示
+                // 3betの時は「相手がオープン、自分がアクション」なのでキーの前後を調整
+                let key = `${currentMyPos}_${currentOpPos}`;
+                if (currentSituation === 'threeBet') {
+                    key = `${currentOpPos}_${currentMyPos}`; // 例: UTG(相手)_BTN(自分)
+                }
+                
                 const data = rangeData[currentSituation][key] || { call: [], raise: [], allin: [] };
 
                 (data.call || []).forEach(h => { const el = document.getElementById('hand-' + h); if(el) el.style.background = 'var(--call)'; });
