@@ -12,8 +12,8 @@
             --primary: #8b5cf6;
             --fold: #334155;
             --call: #10b981;
-            --raise: #ef4444;       /* バリューレイズ（赤） */
-            --bluff: #ec4899;       /* ブラフレイズ（ピンク） */
+            --raise: #ef4444;       /* バリュー（赤） */
+            --bluff: #ec4899;       /* ブラフ（ピンク） */
             --allin: #f59e0b;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-user-select: none; user-select: none; }
@@ -77,7 +77,7 @@
         const ranks = ['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2'];
         const matrixCells = [];
         for (let r = 0; r < 13; r++) {
-            for (let c = 0; c < 13; c++) { // 🌟無限ループバグを修正しました！
+            for (let c = 0; c < 13; c++) {
                 if (r < c) matrixCells.push(ranks[r] + ranks[c] + 's');
                 else if (r > c) matrixCells.push(ranks[c] + ranks[r] + 'o');
                 else matrixCells.push(ranks[r] + ranks[c]);
@@ -167,7 +167,7 @@
             const myPosRow = `<div class="row" id="mypos-row"><div class="row-label">MY POS</div><div class="btn-group" id="mypos-group"></div></div>`;
             const oppPosRow = `<div class="row" id="oppositon-row"><div class="row-label">OPP POS</div><div class="btn-group" id="oppos-group"></div></div>`;
 
-            if (currentSituation === 'open') {
+            if (currentSituation === 'open' || currentSituation === 'vs3bet') {
                 container.innerHTML = myPosRow + oppPosRow;
             } else {
                 container.innerHTML = oppPosRow + myPosRow;
@@ -185,7 +185,7 @@
 
             let allowedOpp = [];
             if (currentSituation === 'open') return;
-            else if (currentSituation === 'threeBet') allowedOpp = ['UTG', 'HJ', 'CO', 'BTN', 'SB'];
+            else if (currentSituation === 'threeBet' || currentSituation === 'vs4bet') allowedOpp = ['UTG', 'HJ', 'CO', 'BTN', 'SB'];
             else allowedOpp = ['HJ', 'CO', 'BTN', 'SB', 'BB'];
 
             if (!allowedOpp.includes(currentOpPos)) currentOpPos = allowedOpp[0];
@@ -213,10 +213,12 @@
 
             if (currentSituation === 'open') {
                 allowedMy = ['UTG', 'HJ', 'CO', 'BTN', 'SB'];
-            } else if (currentSituation === 'threeBet') {
+            } else if (currentSituation === 'threeBet' || currentSituation === 'vs4bet') {
+                // 🌟相手がオープン or 4-Bet(オリジナル)した時、自分はそれより後ろのポジション
                 const oppIdx = allPos.indexOf(currentOpPos);
                 allowedMy = allPos.slice(oppIdx + 1);
             } else {
+                // 🌟自分がオープンして、相手が3-Betしてきた時、自分は相手より前のポジション
                 const oppIdx = allPos.indexOf(currentOpPos);
                 allowedMy = allPos.slice(0, oppIdx);
                 if (allowedMy.length === 0) allowedMy = ['UTG'];
@@ -262,7 +264,7 @@
             
             if (sit === 'open') {
                 currentMyPos = 'UTG';
-            } else if (sit === 'threeBet') {
+            } else if (sit === 'threeBet' || sit === 'vs4bet') {
                 currentOpPos = 'UTG'; currentMyPos = 'HJ';
             } else {
                 currentOpPos = 'HJ'; currentMyPos = 'UTG';
@@ -325,7 +327,8 @@
                     if (el) el.style.background = 'var(--raise)';
                 });
             } else {
-                let key = (currentSituation === 'threeBet') ? `${currentOpPos}_${currentMyPos}` : `${currentMyPos}_${currentOpPos}`;
+                // 🌟データ検索用のキーを状況に合わせて決定
+                let key = (currentSituation === 'threeBet' || currentSituation === 'vs4bet') ? `${currentOpPos}_${currentMyPos}` : `${currentMyPos}_${currentOpPos}`;
                 const data = rangeData[currentSituation][key] || { call: [], raise: [], bluff: [], allin: [] };
 
                 (data.call || []).forEach(h => { const el = document.getElementById('hand-' + h); if(el) el.style.background = 'var(--call)'; });
