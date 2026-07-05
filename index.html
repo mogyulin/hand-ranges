@@ -53,23 +53,10 @@
                 <button onclick="setSituation('vs4bet')">Vs 4-BET</button>
             </div>
         </div>
-        <!-- ② 自分のポジション -->
-        <div class="row">
-            <div class="row-label">MY POS</div>
-            <div class="btn-group" id="mypos-group">
-                <button class="active" onclick="setMyPos('UTG')">UTG</button>
-                <button onclick="setMyPos('HJ')">HJ</button>
-                <button onclick="setMyPos('CO')">CO</button>
-                <button onclick="setMyPos('BTN')">BTN</button>
-                <button onclick="setMyPos('SB')">SB</button>
-            </div>
-        </div>
-        <!-- ③ 相手のポジション (状況に応じて動的変化) -->
-        <div class="row" id="oppositon-row" style="display:none;">
-            <div class="row-label">OPP POS</div>
-            <div class="btn-group" id="oppos-group">
-                <!-- JSで動的にボタンを生成 -->
-            </div>
+
+        <!-- ② 3-BETの時だけ、相手のポジション（起点）を上に持ってくる -->
+        <div id="dynamic-selectors">
+            <!-- JSで上下の並びを動的に入れ替えます -->
         </div>
     </div>
 
@@ -77,7 +64,7 @@
     <div class="legend">
         <div class="legend-item"><div class="dot" style="background:var(--fold)"></div>Fold/Pure</div>
         <div class="legend-item" id="leg-call"><div class="dot" style="background:var(--call)"></div>Call</div>
-        <div class="legend-item" id="leg-raise"><div class="dot" style="background:var(--raise)"></div>Raise/4B</div>
+        <div class="legend-item" id="leg-raise"><div class="dot" style="background:var(--raise)"></div>Open</div>
         <div class="legend-item" id="leg-allin" style="display:none;"><div class="dot" style="background:var(--allin)"></div>5B All-in</div>
     </div>
 
@@ -87,7 +74,6 @@
     </div>
 
     <script>
-        // 13x13のマトリックス用の文字列表を作成
         const ranks = ['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2'];
         const matrixCells = [];
         for (let r = 0; r < 13; r++) {
@@ -98,69 +84,56 @@
             }
         }
 
-        // 現在の選択状態
         let currentSituation = 'open';
         let currentMyPos = 'UTG';
-        let currentOpPos = '';
+        let currentOpPos = 'HJ';
 
-        // --- データ構造（ここにGTOレンジのデータを1つずつ格納していく） ---
-const rangeData = {
+        const rangeData = {
             open: {
                 UTG: ['AA','KK','QQ','JJ','TT','99','88','77','AKs','AQs','AJs','ATs','A5s','A4s','A3s','KQs','KJs','KTs','QJs','QTs','JTs','T9s','98s','AKo','AQo'],
                 HJ: ['AA','KK','QQ','JJ','TT','99','88','77','66','55','AKs','AQs','AJs','ATs','A9s','A8s','A5s','A4s','A3s','A2s','KQs','KJs','KTs','K9s','QJs','QTs','Q9s','JTs','J9s','T9s','98s','87s','AKo','AQo','KQo'],
                 CO: ['AA','KK','QQ','JJ','TT','99','88','77','66','55','44','33','22','AKs','AQs','AJs','ATs','A9s','A8s','A7s','A6s','A5s','A4s','A3s','A2s','KQs','KJs','KTs','K9s','K8s','QJs','QTs','Q9s','JTs','J9s','T9s','T8s','98s','97s','87s','76s','65s','AKo','AQo','KQo','AJo','KJo','QJo'],
-                BTN: ['AA','KK','QQ','JJ','TT','99','88','77','66','55','44','33','22','AKs','AQs','AJs','ATs','A9s','A8s','A7s','A6s','A5s','A4s','A3s','A2s','KQs','KJs','KTs','K9s','K8s','K7s','K6s','K5s','K4s','K3s','K2s','QJs','QTs','Q9s','Q8s','Q7s','Q6s','JTs','J9s','J8s','J7s','T9s','T8s','T7s','98s','97s','87s','86s','76s','75s','65s','64s','54s','53s','43s','AKo','AQo','KQo','AJo','KJo','QJo','ATo','KTo','QTo','JTo'],
+                BTN: ['AA','KK','QQ','JJ','TT','99','88','77','66','55','44','33','22','AKs','AQs','AJs','ATs','A9s','A8s','A7s','A6s','A5s','A4s','A3s','A2s','KQs','KJs','KTs','K9s','K8s','K7s','K6s','K6s','K5s','K4s','K3s','K2s','QJs','QTs','Q9s','Q8s','Q7s','Q6s','JTs','J9s','J8s','J7s','T9s','T8s','T7s','98s','97s','87s','86s','76s','75s','65s','64s','54s','53s','43s','AKo','AQo','KQo','AJo','KJo','QJo','ATo','KTo','QTo','JTo'],
                 SB: ['AA','KK','QQ','JJ','TT','99','88','77','66','55','44','AKs','AQs','AJs','ATs','A9s','A8s','A7s','A6s','A5s','A4s','A2s','KQs','KJs','KTs','K9s','K8s','QJs','QTs','Q9s','JTs','J9s','T9s','T8s','98s','87s','76s','65s','AKo','AQo','KQo','AJo','KJo','QJo','ATo','KTo','QTo']
             },
             threeBet: {
-                // --- ① UTGがオープンした時 ---
                 'UTG_HJ':  { call: ['QQ','JJ','TT','99','88','77','AQs','AQo','KQs','QJs','JTs'], raise: ['AA','KK','AKs','AKo','A5s','A4s'], allin: [] },
                 'UTG_CO':  { call: ['QQ','JJ','TT','99','88','77','AQs','AQo','KQs','KJs','QJs','JTs'], raise: ['AA','KK','AKs','AKo','A5s','A4s'], allin: [] },
                 'UTG_BTN': { call: ['TT','99','88','77','66','KQs','KJs','QJs','JTs','AQo'],       raise: ['AA','KK','QQ','JJ','AKs','AQs','AKo','A5s','A4s','A3s','A2s','T9s','98s'], allin: [] },
-                'UTG_SB':  { call: [], /* SBは3B or Fold */ raise: ['AA','KK','QQ','JJ','TT','AKs','AQs','KQs','KJs','QJs','AKo','AQo','A5s','A4s','A3s','A2s'], allin: [] },
+                'UTG_SB':  { call: [], raise: ['AA','KK','QQ','JJ','TT','AKs','AQs','KQs','KJs','QJs','AKo','AQo','A5s','A4s','A3s','A2s'], allin: [] },
                 'UTG_BB':  { call: ['JJ','TT','99','88','77','66','55','44','33','22','AQs','AJs','ATs','KQs','KJs','KTs','QJs','JTs','T9s','98s','87s','76s','AQo'], raise: ['AA','KK','QQ','AKs','AKo','A5s','A4s','A3s','A2s','K9s','Q9s','J9s'], allin: [] },
-                // --- ② HJがオープンした時 ---
                 'HJ_CO':   { call: ['JJ','TT','99','88','77','AQs','KQs','KJs','QJs','JTs','AQo'], raise: ['AA','KK','QQ','AKs','AKo','A5s','A4s','A3s'], allin: [] },
                 'HJ_BTN':  { call: ['TT','99','88','77','66','KQs','KJs','QJs','JTs','AQo','KQo'], raise: ['AA','KK','QQ','JJ','AKs','AQs','AJs','AKo','A5s','A4s','A3s','A2s','T9s','98s'], allin: [] },
-                'HJ_SB':   { call: [], /* 3B or Fold */ raise: ['AA','KK','QQ','JJ','TT','99','AKs','AQs','AJs','KQs','KJs','QJs','JTs','AKo','AQo','A5s','A4s','A3s'], allin: [] },
+                'HJ_SB':   { call: [], raise: ['AA','KK','QQ','JJ','TT','99','AKs','AQs','AJs','KQs','KJs','QJs','JTs','AKo','AQo','A5s','A4s','A3s'], allin: [] },
                 'HJ_BB':   { call: ['TT','99','88','77','66','55','44','33','22','AQs','AJs','ATs','A9s','KQs','KJs','KTs','QJs','QTs','JTs','J9s','T9s','98s','87s','76s','65s','AQo','KQo'], raise: ['AA','KK','QQ','JJ','AKs','AQs','AKo','A5s','A4s','A3s','A2s','K9s','Q9s'], allin: [] },
-                // --- ③ COがオープンした時 ---
                 'CO_BTN':  { call: ['99','88','77','66','55','KQs','KJs','KTs','QJs','QTs','JTs','AQo','KQo'], raise: ['AA','KK','QQ','JJ','TT','AKs','AQs','AJs','ATs','AKo','A5s','A4s','A3s','A2s','T9s','98s','87s'], allin: [] },
-                'CO_SB':   { call: [], /* 3B or Fold */ raise: ['AA','KK','QQ','JJ','TT','99','88','AKs','AQs','AJs','ATs','KQs','KJs','K9s','QJs','QTs','JTs','AKo','AQo','A5s','A4s','A3s'], allin: [] },
+                'CO_SB':   { call: [], raise: ['AA','KK','QQ','JJ','TT','99','88','AKs','AQs','AJs','ATs','KQs','KJs','K9s','QJs','QTs','JTs','AKo','AQo','A5s','A4s','A3s'], allin: [] },
                 'CO_BB':   { call: ['99','88','77','66','55','44','33','22','AQs','AJs','ATs','A9s','A8s','KQs','KJs','KTs','QJs','QTs','JTs','T9s','T8s','98s','97s','87s','76s','65s','AQo','KQo','AJo','KJo','QJo'], raise: ['AA','KK','QQ','JJ','TT','AKs','AQs','AJs','AKo','A5s','A4s','A3s','A2s','K9s','Q9s','J9s','T9s'], allin: [] },
-                // --- ④ BTNがオープンした時 ---
-                'BTN_SB':  { call: [], /* 3B or Fold */ raise: ['AA','KK','QQ','JJ','TT','99','88','77','66','AKs','AQs','AJs','ATs','A9s','KQs','KJs','KTs','QJs','QTs','JTs','AKo','AQo','KQo','AJo','A5s','A4s','A3s','A2s','K9s','Q9s','J9s','T9s'], allin: [] },
+                'BTN_SB':  { call: [], raise: ['AA','KK','QQ','JJ','TT','99','88','77','66','AKs','AQs','AJs','ATs','A9s','KQs','KJs','KTs','QJs','QTs','JTs','AKo','AQo','KQo','AJo','A5s','A4s','A3s','A2s','K9s','Q9s','J9s','T9s'], allin: [] },
                 'BTN_BB':  { call: ['88','77','66','55','44','33','22','AJs','ATs','A9s','A8s','A7s','KQs','KJs','KTs','K9s','QJs','QTs','Q9s','JTs','J9s','T9s','T8s','98s','97s','87s','86s','76s','65s','54s','AQo','KQo','AJo','KJo','QJo','ATo','KTo','QTo','JTo'], raise: ['AA','KK','QQ','JJ','TT','99','AKs','AQs','AKo','A5s','A4s','A3s','A2s','K8s','K7s','Q8s','J8s','T7s','96s','85s','74s','64s','53s'], allin: [] },
-                // --- ⑤ SBがオープンした時 ---
                 'SB_BB':   { call: ['TT','99','88','77','66','55','44','33','22','AJs','ATs','A9s','A8s','A7s','A6s','KQs','KJs','KTs','K9s','K8s','QJs','QTs','Q9s','JTs','J9s','T9s','T8s','98s','97s','87s','86s','76s','75s','65s','64s','54s','53s','43s','AQo','KQo','AJo','KJo','QJo','ATo','KTo','QTo','JTo'], raise: ['AA','KK','QQ','JJ','AKs','AQs','AKo','A5s','A4s','A3s','A2s','K7s','K6s','Q8s','J8s','T7s','96s','85s'], allin: [] }
             },
             vs3bet: {
-                // 自分がオープンして3-betを喰らった時 (MyPos_OppPos)
-                // UTGオープン時
                 'UTG_HJ':  { call: ['QQ','JJ','TT','AQs','KQs','AKo'], raise: ['AA','KK','AKs','A5s'], allin: [] },
                 'UTG_CO':  { call: ['QQ','JJ','TT','AQs','KQs','AKo'], raise: ['AA','KK','AKs','A5s'], allin: [] },
                 'UTG_BTN': { call: ['QQ','JJ','TT','AQs','KQs','AKo'], raise: ['AA','KK','AKs','A5s'], allin: [] },
                 'UTG_SB':  { call: ['QQ','JJ','TT','AQs','AKo'],       raise: ['AA','KK','AKs'],       allin: [] },
                 'UTG_BB':  { call: ['QQ','JJ','TT','AQs','AKo'],       raise: ['AA','KK','AKs'],       allin: [] },
-                // HJオープン時
                 'HJ_UTG':  { call: ['QQ','JJ','TT','AQs'],             raise: ['AA','KK','AKs'],       allin: [] },
-                'HJ_CO':   { call: ['QQ','JJ','TT','AQs','KQs','AKo'], raise: ['AA','KK','AKs','A5s'], allin: [] },
+                'HJ_CO':   { call: ['QQ','JJ','TT','AQs','KQs','AKo'], raise: ['AA(--cite--): []','KK','AKs','A5s'], allin: [] },
                 'HJ_BTN':  { call: ['QQ','JJ','TT','AQs','KQs','AKo'], raise: ['AA','KK','AKs','A5s'], allin: [] },
                 'HJ_SB':   { call: ['QQ','JJ','TT','AQs','KQs','AKo'], raise: ['AA','KK','AKs','A4s'], allin: [] },
                 'HJ_BB':   { call: ['QQ','JJ','TT','AQs','KQs','AKo'], raise: ['AA','KK','AKs','A4s'], allin: [] },
-                // COオープン時
                 'CO_UTG':  { call: ['QQ','JJ','AQs'],                   raise: ['AA','KK','AKs'],       allin: [] },
                 'CO_HJ':   { call: ['QQ','JJ','TT','AQs','KQs'],       raise: ['AA','KK','AKs','A5s'], allin: [] },
                 'CO_BTN':  { call: ['QQ','JJ','TT','99','AQs','KQs','JTs','AKo'], raise: ['AA','KK','AKs','A5s','A4s'], allin: [] },
                 'CO_SB':   { call: ['QQ','JJ','TT','AQs','KQs','AKo'], raise: ['AA','KK','AKs','A5s','A4s'], allin: [] },
                 'CO_BB':   { call: ['QQ','JJ','TT','AQs','KQs','AKo'], raise: ['AA','KK','AKs','A5s','A4s'], allin: [] },
-                // BTNオープン時
                 'BTN_UTG': { call: ['QQ','JJ','AQs'],                   raise: ['AA','KK','AKs'],       allin: [] },
                 'BTN_HJ':  { call: ['QQ','JJ','AQs','KQs'],             raise: ['AA','KK','AKs','A5s'], allin: [] },
                 'BTN_CO':  { call: ['QQ','JJ','TT','AQs','KQs','JTs'], raise: ['AA','KK','AKs','A5s','A4s'], allin: [] },
                 'BTN_SB':  { call: ['QQ','JJ','TT','99','88','AQs','AJs','KQs','KJs','QJs','JTs','T9s','AKo','AQo'], raise: ['AA','KK','AKs','A5s','A4s','A3s','A2s'], allin: [] },
                 'BTN_BB':  { call: ['QQ','JJ','TT','99','88','AQs','AJs','KQs','KJs','QJs','JTs','T9s','AKo','AQo'], raise: ['AA','KK','AKs','A5s','A4s','A3s','A2s'], allin: [] },
-                // SBオープン時
                 'SB_UTG':  { call: ['QQ','AQs'],                       raise: ['AA','KK','AKs'],       allin: [] },
                 'SB_HJ':   { call: ['QQ','JJ','AQs'],                   raise: ['AA','KK','AKs'],       allin: [] },
                 'SB_CO':   { call: ['QQ','JJ','TT','AQs','KQs'],       raise: ['AA','KK','AKs','A5s'], allin: [] },
@@ -168,22 +141,16 @@ const rangeData = {
                 'SB_BB':   { call: ['QQ','JJ','TT','99','88','77','AQs','AJs','ATs','KQs','KJs','QJs','JTs','AKo','AQo'], raise: ['AA','KK','QQ','AKs','A5s','A4s','A3s'], allin: [] }
             },
             vs4bet: {
-                // 自分が3-betして4-betを喰らった時 (MyPos_OppPos)
-                // HJから3-betした時
                 'HJ_UTG':  { call: ['KK','QQ','AKs'],                 raise: [],                      allin: ['AA'] },
-                // COから3-betした時
                 'CO_UTG':  { call: ['KK','QQ','AKs'],                 raise: [],                      allin: ['AA'] },
                 'CO_HJ':   { call: ['KK','QQ','JJ','AKs'],             raise: [],                      allin: ['AA'] },
-                // BTNから3-betした時
                 'BTN_UTG': { call: ['KK','AKs'],                      raise: [],                      allin: ['AA'] },
                 'BTN_HJ':  { call: ['KK','QQ','AKs'],                 raise: [],                      allin: ['AA'] },
                 'BTN_CO':  { call: ['KK','QQ','JJ','AKs','AQs'],       raise: [],                      allin: ['AA','A5s'] },
-                // SBから3-betした時
                 'SB_UTG':  { call: ['KK','AKs'],                      raise: [],                      allin: ['AA'] },
                 'SB_HJ':   { call: ['KK','QQ','AKs'],                 raise: [],                      allin: ['AA'] },
                 'SB_CO':   { call: ['KK','QQ','JJ','AKs'],             raise: [],                      allin: ['AA'] },
                 'SB_BTN':  { call: ['KK','QQ','JJ','TT','AKs','AQs','KQs','AKo'], raise: [],          allin: ['AA','A5s','A4s'] },
-                // BBから3-betした時
                 'BB_UTG':  { call: ['KK','AKs'],                      raise: [],                      allin: ['AA'] },
                 'BB_HJ':   { call: ['KK','QQ','AKs'],                 raise: [],                      allin: ['AA'] },
                 'BB_CO':   { call: ['KK','QQ','JJ','AKs'],             raise: [],                      allin: ['AA'] },
@@ -192,7 +159,40 @@ const rangeData = {
             }
         };
 
-        // 画面の初期化
+        function renderSelectors() {
+            const container = document.getElementById('dynamic-selectors');
+            container.innerHTML = '';
+
+            const myPosRow = `
+                <div class="row">
+                    <div class="row-label">MY POS</div>
+                    <div class="btn-group" id="mypos-group">
+                        <button onclick="setMyPos('UTG')">UTG</button>
+                        <button onclick="setMyPos('HJ')">HJ</button>
+                        <button onclick="setMyPos('CO')">CO</button>
+                        <button onclick="setMyPos('BTN')">BTN</button>
+                        <button onclick="setMyPos('SB')">SB</button>
+                        <button id="mypos-bb" onclick="setMyPos('BB')">BB</button>
+                    </div>
+                </div>`;
+
+            const oppPosRow = `
+                <div class="row" id="oppositon-row">
+                    <div class="row-label">OPP POS</div>
+                    <div class="btn-group" id="oppos-group"></div>
+                </div>`;
+
+            // 3-BETの時だけOPP POS（相手）を上に配置
+            if (currentSituation === 'threeBet') {
+                container.innerHTML = oppPosRow + myPosRow;
+            } else {
+                container.innerHTML = myPosRow + oppPosRow;
+            }
+
+            // 初期状態のアクティブ化
+            updateButtonsUI();
+        }
+
         function initGrid() {
             const grid = document.getElementById('matrix');
             grid.innerHTML = '';
@@ -203,96 +203,141 @@ const rangeData = {
                 cell.innerText = hand;
                 grid.appendChild(cell);
             });
+            renderSelectors();
             updateDisplay();
         }
 
-        // シチュエーション切り替え
         function setSituation(sit) {
             currentSituation = sit;
-            setActive('situation-group', event.target);
             
+            // デフォルトの初期位置調整
+            if (sit === 'open') {
+                if (currentMyPos === 'BB') currentMyPos = 'UTG';
+            } else if (sit === 'threeBet') {
+                currentOpPos = 'UTG';
+                currentMyPos = 'HJ';
+            } else {
+                if (currentMyPos === 'BB') currentMyPos = 'UTG';
+                currentOpPos = (currentMyPos === 'UTG') ? 'HJ' : 'UTG';
+            }
+
+            // セレクターの並び順を再レンダリング
+            renderSelectors();
+
             const oppRow = document.getElementById('oppositon-row');
+            const legRaise = document.getElementById('leg-raise');
+            const legAllin = document.getElementById('leg-allin');
+            const legCall = document.getElementById('leg-call');
+
             if (sit === 'open') {
                 oppRow.style.display = 'none';
-                document.getElementById('leg-call').style.display = 'none';
-                document.getElementById('leg-allin').style.display = 'none';
-                document.getElementById('leg-raise').innerText = 'Open';
+                legCall.style.display = 'none';
+                legAllin.style.display = 'none';
+                legRaise.innerHTML = '<div class="dot" style="background:var(--raise)"></div>Open';
             } else {
                 oppRow.style.display = 'flex';
-                document.getElementById('leg-call').style.display = 'flex';
-                // vs4betの時だけ5B All-inの凡例を出す
-                document.getElementById('leg-allin').style.display = (sit === 'vs4bet') ? 'flex' : 'none';
-                document.getElementById('leg-raise').innerText = (sit === 'threeBet') ? '3-Bet' : '4-Bet';
+                legCall.style.display = 'flex';
+                legAllin.style.display = (sit === 'vs4bet') ? 'flex' : 'none';
+                
+                if (sit === 'threeBet') {
+                    legRaise.innerHTML = '<div class="dot" style="background:var(--raise)"></div>3-Bet';
+                } else {
+                    legRaise.innerHTML = '<div class="dot" style="background:var(--raise)"></div>4-Bet';
+                }
                 updateOpponentButtons();
             }
             updateDisplay();
         }
 
-        // 自分のポジション切り替え
         function setMyPos(pos) {
             currentMyPos = pos;
-            setActive('mypos-group', event.target);
             if (currentSituation !== 'open') {
                 updateOpponentButtons();
             }
+            updateButtonsUI();
             updateDisplay();
         }
 
-        // 相手のポジション切り替え
         function setOpPos(pos) {
             currentOpPos = pos;
-            setActive('oppos-group', event.target);
+            updateButtonsUI();
             updateDisplay();
         }
 
-        // 相手ポジションのボタンを動的に生成
         function updateOpponentButtons() {
             const container = document.getElementById('oppos-group');
+            if (!container) return;
             container.innerHTML = '';
-            const allPos = ['UTG', 'HJ', 'CO', 'BTN', 'SB', 'BB'];
             
-            // 自分以外のポジションをボタンにする
-            const oppPositions = allPos.filter(p => p !== currentMyPos);
-            oppPositions.forEach((pos, idx) => {
+            const allPos = ['UTG', 'HJ', 'CO', 'BTN', 'SB', 'BB'];
+            let oppPositions = [];
+
+            if (currentSituation === 'threeBet') {
+                // 3-BET：相手がオープンできるポジション（BB以外）で、かつ自分より前の席
+                const myIdx = allPos.indexOf(currentMyPos);
+                oppPositions = allPos.slice(0, myIdx).filter(p => p !== 'BB');
+                if (oppPositions.length === 0) oppPositions = ['UTG'];
+            } else {
+                // Vs 3-Bet / Vs 4-Bet：自分以外の全席
+                oppPositions = allPos.filter(p => p !== currentMyPos);
+            }
+
+            if (!oppPositions.includes(currentOpPos)) {
+                currentOpPos = oppPositions[0];
+            }
+
+            oppPositions.forEach(pos => {
                 const btn = document.createElement('button');
                 btn.innerText = pos;
-                if (idx === 0) {
-                    btn.className = 'active';
-                    currentOpPos = pos;
-                }
                 btn.onclick = () => setOpPos(pos);
                 container.appendChild(btn);
             });
         }
 
-        // アクティブクラスの切り替え
-        function setActive(groupId, targetButton) {
-            const group = document.getElementById(groupId);
-            group.querySelectorAll('button').forEach(b => b.classList.remove('active'));
-            targetButton.classList.add('active');
+        function updateButtonsUI() {
+            // SITUATION
+            const sitGroup = document.getElementById('situation-group');
+            sitGroup.querySelectorAll('button').forEach(b => {
+                b.classList.toggle('active', b.getAttribute('onclick').includes(`'${currentSituation}'`));
+            });
+
+            // MY POS
+            const myPosGroup = document.getElementById('mypos-group');
+            if (myPosGroup) {
+                // OPENの時はBBを非表示にする
+                const bbBtn = document.getElementById('mypos-bb');
+                if (bbBtn) bbBtn.style.display = (currentSituation === 'open') ? 'none' : 'inline-block';
+
+                myPosGroup.querySelectorAll('button').forEach(b => {
+                    b.classList.toggle('active', b.getAttribute('onclick').includes(`'${currentMyPos}'`));
+                });
+            }
+
+            // OPP POS
+            const oppGroup = document.getElementById('oppos-group');
+            if (oppGroup) {
+                oppGroup.querySelectorAll('button').forEach(b => {
+                    b.classList.toggle('active', b.innerText === currentOpPos);
+                });
+            }
         }
 
-        // マトリックスの色を更新
         function updateDisplay() {
-            // 一旦すべてFoldの色（グレー）にする
             matrixCells.forEach(hand => {
                 const el = document.getElementById('hand-' + hand);
                 el.style.background = 'var(--fold)';
             });
 
             if (currentSituation === 'open') {
-                // オープンレンジの表示
                 const hands = rangeData.open[currentMyPos] || [];
                 hands.forEach(hand => {
                     const el = document.getElementById('hand-' + hand);
                     if (el) el.style.background = 'var(--raise)';
                 });
             } else {
-                // 3bet / Vs 3bet / Vs 4bet の表示
-                // 3betの時は「相手がオープン、自分がアクション」なのでキーの前後を調整
                 let key = `${currentMyPos}_${currentOpPos}`;
                 if (currentSituation === 'threeBet') {
-                    key = `${currentOpPos}_${currentMyPos}`; // 例: UTG(相手)_BTN(自分)
+                    key = `${currentOpPos}_${currentMyPos}`;
                 }
                 
                 const data = rangeData[currentSituation][key] || { call: [], raise: [], allin: [] };
@@ -303,14 +348,9 @@ const rangeData = {
             }
         }
 
-        // 起動
         initGrid();
+        // 初回のみ凡例の初期化をトリガー
+        setSituation('open');
     </script>
 </body>
 </html>
-
-
-
-
-
-
