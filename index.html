@@ -103,22 +103,69 @@
         let currentOpPos = '';
 
         // --- データ構造（ここにGTOレンジのデータを1つずつ格納していく） ---
-        const rangeData = {
+const rangeData = {
             open: {
                 UTG: ['AA','KK','QQ','JJ','TT','99','88','77','AKs','AQs','AJs','ATs','A5s','A4s','A3s','KQs','KJs','KTs','QJs','QTs','JTs','T9s','98s','AKo','AQo'],
                 HJ: ['AA','KK','QQ','JJ','TT','99','88','77','66','55','AKs','AQs','AJs','ATs','A9s','A8s','A5s','A4s','A3s','A2s','KQs','KJs','KTs','K9s','QJs','QTs','Q9s','JTs','J9s','T9s','98s','87s','AKo','AQo','KQo'],
-                CO: [], // 後ほど追加
-                BTN: [], // 後ほど追加
-                SB: []  // 後ほど追加
+                CO: ['AA','KK','QQ','JJ','TT','99','88','77','66','55','44','33','22','AKs','AQs','AJs','ATs','A9s','A8s','A7s','A6s','A5s','A4s','A3s','A2s','KQs','KJs','KTs','K9s','K8s','QJs','QTs','Q9s','JTs','J9s','T9s','T8s','98s','97s','87s','76s','65s','AKo','AQo','KQo','AJo','KJo','QJo'],
+                BTN: ['AA','KK','QQ','JJ','TT','99','88','77','66','55','44','33','22','AKs','AQs','AJs','ATs','A9s','A8s','A7s','A6s','A5s','A4s','A3s','A2s','KQs','KJs','KTs','K9s','K8s','K7s','K6s','K5s','K4s','K3s','K2s','QJs','QTs','Q9s','Q8s','Q7s','Q6s','JTs','J9s','J8s','J7s','T9s','T8s','T7s','98s','97s','87s','86s','76s','75s','65s','64s','54s','53s','43s','AKo','AQo','KQo','AJo','KJo','QJo','ATo','KTo','QTo','JTo'],
+                SB: ['AA','KK','QQ','JJ','TT','99','88','77','66','55','44','AKs','AQs','AJs','ATs','A9s','A8s','A7s','A6s','A5s','A4s','A2s','KQs','KJs','KTs','K9s','K8s','QJs','QTs','Q9s','JTs','J9s','T9s','T8s','98s','87s','76s','65s','AKo','AQo','KQo','AJo','KJo','QJo','ATo','KTo','QTo']
             },
             vs3bet: {
-                // 例: 自分がUTGでオープンして、BTNから3-betを喰らった時のレンジ
-                // 'CALL' と 'RAISE(4B)' と 'ALLIN(5B)' を分けて管理できるようにする
-                'UTG_BTN': { call: ['QQ','JJ','TT','AKo'], raise: ['AA','KK','AKs'], allin: [] }
+                // 自分がオープンして3-betを喰らった時 (MyPos_OppPos)
+                // UTGオープン時
+                'UTG_HJ':  { call: ['QQ','JJ','TT','AQs','KQs','AKo'], raise: ['AA','KK','AKs','A5s'], allin: [] },
+                'UTG_CO':  { call: ['QQ','JJ','TT','AQs','KQs','AKo'], raise: ['AA','KK','AKs','A5s'], allin: [] },
+                'UTG_BTN': { call: ['QQ','JJ','TT','AQs','KQs','AKo'], raise: ['AA','KK','AKs','A5s'], allin: [] },
+                'UTG_SB':  { call: ['QQ','JJ','TT','AQs','AKo'],       raise: ['AA','KK','AKs'],       allin: [] },
+                'UTG_BB':  { call: ['QQ','JJ','TT','AQs','AKo'],       raise: ['AA','KK','AKs'],       allin: [] },
+                // HJオープン時
+                'HJ_UTG':  { call: ['QQ','JJ','TT','AQs'],             raise: ['AA','KK','AKs'],       allin: [] },
+                'HJ_CO':   { call: ['QQ','JJ','TT','AQs','KQs','AKo'], raise: ['AA','KK','AKs','A5s'], allin: [] },
+                'HJ_BTN':  { call: ['QQ','JJ','TT','AQs','KQs','AKo'], raise: ['AA','KK','AKs','A5s'], allin: [] },
+                'HJ_SB':   { call: ['QQ','JJ','TT','AQs','KQs','AKo'], raise: ['AA','KK','AKs','A4s'], allin: [] },
+                'HJ_BB':   { call: ['QQ','JJ','TT','AQs','KQs','AKo'], raise: ['AA','KK','AKs','A4s'], allin: [] },
+                // COオープン時
+                'CO_UTG':  { call: ['QQ','JJ','AQs'],                   raise: ['AA','KK','AKs'],       allin: [] },
+                'CO_HJ':   { call: ['QQ','JJ','TT','AQs','KQs'],       raise: ['AA','KK','AKs','A5s'], allin: [] },
+                'CO_BTN':  { call: ['QQ','JJ','TT','99','AQs','KQs','JTs','AKo'], raise: ['AA','KK','AKs','A5s','A4s'], allin: [] },
+                'CO_SB':   { call: ['QQ','JJ','TT','AQs','KQs','AKo'], raise: ['AA','KK','AKs','A5s','A4s'], allin: [] },
+                'CO_BB':   { call: ['QQ','JJ','TT','AQs','KQs','AKo'], raise: ['AA','KK','AKs','A5s','A4s'], allin: [] },
+                // BTNオープン時
+                'BTN_UTG': { call: ['QQ','JJ','AQs'],                   raise: ['AA','KK','AKs'],       allin: [] },
+                'BTN_HJ':  { call: ['QQ','JJ','AQs','KQs'],             raise: ['AA','KK','AKs','A5s'], allin: [] },
+                'BTN_CO':  { call: ['QQ','JJ','TT','AQs','KQs','JTs'], raise: ['AA','KK','AKs','A5s','A4s'], allin: [] },
+                'BTN_SB':  { call: ['QQ','JJ','TT','99','88','AQs','AJs','KQs','KJs','QJs','JTs','T9s','AKo','AQo'], raise: ['AA','KK','AKs','A5s','A4s','A3s','A2s'], allin: [] },
+                'BTN_BB':  { call: ['QQ','JJ','TT','99','88','AQs','AJs','KQs','KJs','QJs','JTs','T9s','AKo','AQo'], raise: ['AA','KK','AKs','A5s','A4s','A3s','A2s'], allin: [] },
+                // SBオープン時
+                'SB_UTG':  { call: ['QQ','AQs'],                       raise: ['AA','KK','AKs'],       allin: [] },
+                'SB_HJ':   { call: ['QQ','JJ','AQs'],                   raise: ['AA','KK','AKs'],       allin: [] },
+                'SB_CO':   { call: ['QQ','JJ','TT','AQs','KQs'],       raise: ['AA','KK','AKs','A5s'], allin: [] },
+                'SB_BTN':  { call: ['QQ','JJ','TT','99','AQs','KQs'],   raise: ['AA','KK','AKs','A5s','A4s'], allin: [] },
+                'SB_BB':   { call: ['QQ','JJ','TT','99','88','77','AQs','AJs','ATs','KQs','KJs','QJs','JTs','AKo','AQo'], raise: ['AA','KK','QQ','AKs','A5s','A4s','A3s'], allin: [] }
             },
             vs4bet: {
-                // 例: 自分がBTNで3-betして、UTGから4-betが飛んできた時
-                'BTN_UTG': { call: [], raise: [], allin: ['AA','AKs'] }
+                // 自分が3-betして4-betを喰らった時 (MyPos_OppPos)
+                // HJから3-betした時
+                'HJ_UTG':  { call: ['KK','QQ','AKs'],                 raise: [],                      allin: ['AA'] },
+                // COから3-betした時
+                'CO_UTG':  { call: ['KK','QQ','AKs'],                 raise: [],                      allin: ['AA'] },
+                'CO_HJ':   { call: ['KK','QQ','JJ','AKs'],             raise: [],                      allin: ['AA'] },
+                // BTNから3-betした時
+                'BTN_UTG': { call: ['KK','AKs'],                      raise: [],                      allin: ['AA'] },
+                'BTN_HJ':  { call: ['KK','QQ','AKs'],                 raise: [],                      allin: ['AA'] },
+                'BTN_CO':  { call: ['KK','QQ','JJ','AKs','AQs'],       raise: [],                      allin: ['AA','A5s'] },
+                // SBから3-betした時
+                'SB_UTG':  { call: ['KK','AKs'],                      raise: [],                      allin: ['AA'] },
+                'SB_HJ':   { call: ['KK','QQ','AKs'],                 raise: [],                      allin: ['AA'] },
+                'SB_CO':   { call: ['KK','QQ','JJ','AKs'],             raise: [],                      allin: ['AA'] },
+                'SB_BTN':  { call: ['KK','QQ','JJ','TT','AKs','AQs','KQs','AKo'], raise: [],          allin: ['AA','A5s','A4s'] },
+                // BBから3-betした時
+                'BB_UTG':  { call: ['KK','AKs'],                      raise: [],                      allin: ['AA'] },
+                'BB_HJ':   { call: ['KK','QQ','AKs'],                 raise: [],                      allin: ['AA'] },
+                'BB_CO':   { call: ['KK','QQ','JJ','AKs'],             raise: [],                      allin: ['AA'] },
+                'BB_BTN':  { call: ['KK','QQ','JJ','TT','AKs','AQs','KQs','AKo'], raise: [],          allin: ['AA','A5s','A4s'] },
+                'BB_SB':   { call: ['KK','QQ','JJ','TT','AKs','AQs','KQs','AKo'], raise: [],          allin: ['AA','A5s'] }
             }
         };
 
