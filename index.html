@@ -88,7 +88,7 @@
         let currentMyPos = 'UTG';
         let currentOpPos = 'HJ';
 
-        // 150bb完全最適化 ＆ バリュー/ブラフ完全分離データ
+        // 150bb完全最適化データ
         const rangeData = {
             open: {
                 UTG: ['AA','KK','QQ','JJ','TT','99','88','77','AKs','AQs','AJs','ATs','A5s','A4s','A3s','KQs','KJs','KTs','QJs','QTs','JTs','T9s','98s','AKo','AQo'],
@@ -213,15 +213,9 @@
 
             if (currentSituation === 'open') {
                 allowedMy = ['UTG', 'HJ', 'CO', 'BTN', 'SB'];
-            } else if (currentSituation === 'threeBet' || currentSituation === 'vs4bet') {
-                // 🌟相手がオープン or 4-Bet(オリジナル)した時、自分はそれより後ろのポジション
-                const oppIdx = allPos.indexOf(currentOpPos);
-                allowedMy = allPos.slice(oppIdx + 1);
             } else {
-                // 🌟自分がオープンして、相手が3-Betしてきた時、自分は相手より前のポジション
-                const oppIdx = allPos.indexOf(currentOpPos);
-                allowedMy = allPos.slice(0, oppIdx);
-                if (allowedMy.length === 0) allowedMy = ['UTG'];
+                // 🌟Vs3B、Vs4B、3Bはすべて1周する前提なので、相手と同じポジション以外「全ポジション」が選べるように変更
+                allowedMy = allPos.filter(pos => pos !== currentOpPos);
             }
 
             if (!allowedMy.includes(currentMyPos)) currentMyPos = allowedMy[0];
@@ -327,8 +321,15 @@
                     if (el) el.style.background = 'var(--raise)';
                 });
             } else {
-                // 🌟データ検索用のキーを状況に合わせて決定
-                let key = (currentSituation === 'threeBet' || currentSituation === 'vs4bet') ? `${currentOpPos}_${currentMyPos}` : `${currentMyPos}_${currentOpPos}`;
+                // 🌟データ定義側のキーは常に[相手_自分]、または[自分_相手]の形に合わせて固定。
+                // データのオブジェクト構造（threeBet、vs3bet、vs4bet）のキーの命名規則に100%一致させます。
+                let key;
+                if (currentSituation === 'threeBet' || currentSituation === 'vs4bet') {
+                    key = `${currentOpPos}_${currentMyPos}`; // 相手_自分 (例: HJ_SB)
+                } else {
+                    key = `${currentMyPos}_${currentOpPos}`; // 自分_相手 (例: UTG_HJ)
+                }
+                
                 const data = rangeData[currentSituation][key] || { call: [], raise: [], bluff: [], allin: [] };
 
                 (data.call || []).forEach(h => { const el = document.getElementById('hand-' + h); if(el) el.style.background = 'var(--call)'; });
