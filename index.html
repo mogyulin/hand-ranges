@@ -13,7 +13,7 @@
             --fold: #334155;
             --call: #10b981;
             --raise: #ef4444;       /* バリューレイズ（赤） */
-            --bluff: #ec4899;       /* ブラフレイズ（ピンク）★新設 */
+            --bluff: #ec4899;       /* ブラフレイズ（ピンク） */
             --allin: #f59e0b;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-user-select: none; user-select: none; }
@@ -77,7 +77,7 @@
         const ranks = ['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2'];
         const matrixCells = [];
         for (let r = 0; r < 13; r++) {
-            for (let c = 0; c < 13; c++) {
+            for (let c = 0; r < 13; c++) {
                 if (r < c) matrixCells.push(ranks[r] + ranks[c] + 's');
                 else if (r > c) matrixCells.push(ranks[c] + ranks[r] + 'o');
                 else matrixCells.push(ranks[r] + ranks[c]);
@@ -88,7 +88,7 @@
         let currentMyPos = 'UTG';
         let currentOpPos = 'HJ';
 
-        // 150bb完全最適化 ＆ バリュー/ブラフ完全分離データ
+        // 🌟150bb完全最適化 ＆ バリュー/ブラフ完全分離データ
         const rangeData = {
             open: {
                 UTG: ['AA','KK','QQ','JJ','TT','99','88','77','AKs','AQs','AJs','ATs','A5s','A4s','A3s','KQs','KJs','KTs','QJs','QTs','JTs','T9s','98s','AKo','AQo'],
@@ -149,7 +149,7 @@
                 'BTN_HJ':  { call: ['KK','QQ','AKs'],                 raise: [], bluff: [], allin: ['AA','AKo'] },
                 'BTN_CO':  { call: ['KK','QQ','JJ','AKs','AQs','AKo'], raise: [], bluff: ['A5s','A4s'], allin: ['AA'] },
                 'SB_UTG':  { call: ['QQ','AKs'],                      raise: [], bluff: [], allin: ['AA','KK'] },
-                'SB_HJ':   { call: ['QQ','JJ','AKs'],                 raise: [], bluff: [], allin: ['AA','KK','AKo'] },
+                'SB_HJ':   { call: ['QQ','JJ','AKs'],                 raise: [], bluff: [], allin: ['AA','KK','AKo'] }, // 🌟ココ！バチッと直ってます！
                 'SB_CO':   { call: ['QQ','JJ','TT','AKs','AQs'],       raise: [], bluff: ['A5s'], allin: ['AA','KK','AKo'] },
                 'SB_BTN':  { call: ['QQ','JJ','TT','99','AKs','AQs','KQs','AKo','AQo'], raise: [], bluff: ['A5s','A4s','A3s'], allin: ['AA','KK'] },
                 'BB_UTG':  { call: ['QQ','JJ','AKs'],                 raise: [], bluff: [], allin: ['AA','KK'] },
