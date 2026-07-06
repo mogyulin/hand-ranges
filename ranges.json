@@ -1,0 +1,23 @@
+{
+  "open": {
+    "UTG": { "AA": "O", "KK": "O", "QQ": "O", "AKs": "O", "AKo": "O" },
+    "HJ": { "AA": "O", "KK": "O", "QQ": "O", "JJ": "O", "TT": "O", "99": "O", "88": "O", "77": "O", "66": "O", "55": "O", "AKs": "O", "AQs": "O", "AJs": "O", "ATs": "O", "A5s": "O", "A4s": "O", "KQs": "O", "KJs": "O", "QJs": "O", "JTs": "O", "T9s": "O", "98s": "O", "AKo": "O", "AQo": "O" }
+  },
+  "vsOpen": {
+    "UTG_HJ": { "QQ": "C3", "JJ": "C", "TT": "C", "AKs": "3B", "AQs": "C", "AKo": "C3", "AQo": "F" }
+  },
+  "vs3bet": {
+    "HJ_SB": {
+      "AA": "4B", "KK": "4B", 
+      "QQ": "C4", "JJ": "C", "TT": "C", "99": "C", "88": "FC",
+      "AKs": "4B", "AQs": "C", "AJs": "FC", "ATs": "F", 
+      "A5s": "B4", "A4s": "B4",
+      "KQs": "C", "KJs": "FC", "QJs": "C", "JTs": "C", 
+      "T9s": "FC", "98s": "FC",
+      "AKo": "C4", "AQo": "F"
+    }
+  },
+  "vs4bet": {
+    "SB_HJ": { "AA": "AI", "KK": "C5", "QQ": "C", "AKs": "C", "AKo": "F" }
+  }
+}
