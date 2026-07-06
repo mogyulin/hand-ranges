@@ -1,154 +1,87 @@
 {
   "open": {
-    "UTG": {
-      "AA": "O", "KK": "O", "QQ": "O", "JJ": "O", "TT": "O", "99": "O", "88": "O", "77": "O", "66": "O", "55": "O",
-      "AKs": "O", "AQs": "O", "AJs": "O", "ATs": "O", "A9s": "O", "A8s": "O", "A7s": "O", "A6s": "O", "A5s": "O", "A4s": "O", "A3s": "O",
-      "AKo": "O", "AQo": "O", "AJo": "O", "ATo": "O",
-      "KQs": "O", "KJs": "O", "KTs": "O", "K9s": "O",
-      "KQo": "O",
-      "QJs": "O", "QTs": "O",
-      "JTs": "O", "J9s": "O",
-      "T9s": "O"
-    },
-    "HJ": {
-      "AA": "O", "KK": "O", "QQ": "O", "JJ": "O", "TT": "O", "99": "O", "88": "O", "77": "O", "66": "O", "55": "O", "44": "O",
-      "AKs": "O", "AQs": "O", "AJs": "O", "ATs": "O", "A9s": "O", "A8s": "O", "A7s": "O", "A6s": "O", "A5s": "O", "A4s": "O", "A3s": "O", "A2s": "O",
-      "AKo": "O", "AQo": "O", "AJo": "O", "ATo": "O",
-      "KQs": "O", "KJs": "O", "KTs": "O", "K9s": "O", "K8s": "O",
-      "KQo": "O", "KJo": "O",
-      "QJs": "O", "QTs": "O", "Q9s": "O",
-      "QJo": "O",
-      "JTs": "O", "J9s": "O",
-      "JTo": "O",
-      "T9s": "O", "T8s": "O",
-      "98s": "O"
-    },
-    "BTN": {
-      "AA": "O", "KK": "O", "QQ": "O", "JJ": "O", "TT": "O", "99": "O", "88": "O", "77": "O", "66": "O", "55": "O", "44": "O", "33": "O", "22": "O",
-      "AKs": "O", "AQs": "O", "AJs": "O", "ATs": "O", "A9s": "O", "A8s": "O", "A7s": "O", "A6s": "O", "A5s": "O", "A4s": "O", "A3s": "O", "A2s": "O",
-      "AKo": "O", "AQo": "O", "AJo": "O", "ATo": "O", "A9o": "O", "A8o": "O", "A7o": "O", "A5o": "O",
-      "KQs": "O", "KJs": "O", "KTs": "O", "K9s": "O", "K8s": "O", "K7s": "O", "K6s": "O", "K5s": "O", "K4s": "O", "K3s": "O", "K2s": "O",
-      "KQo": "O", "KJo": "O", "KTo": "O", "K9o": "O",
-      "QJs": "O", "QTs": "O", "Q9s": "O", "Q8s": "O", "Q7s": "O", "Q6s": "O", "Q5s": "O", "Q4s": "O",
-      "QJo": "O", "QTo": "O", "Q9o": "O",
-      "JTs": "O", "J9s": "O", "J8s": "O", "J7s": "O",
-      "JTo": "O", "J9o": "O",
-      "T9s": "O", "T8s": "O", "T7s": "O",
-      "T9o": "O",
-      "98s": "O", "97s": "O",
-      "98o": "O",
-      "87s": "O", "86s": "O",
-      "76s": "O", "75s": "O",
-      "65s": "O", "54s": "O"
-    }
+    "UTG": { "AA": "O", "KK": "O", "QQ": "O", "JJ": "O", "TT": "O", "99": "O", "88": "O", "77": "O", "66": "O", "55": "O", "AKs": "O", "AQs": "O", "AJs": "O", "ATs": "O", "A9s": "O", "A8s": "O", "A7s": "O", "A6s": "O", "A5s": "O", "A4s": "O", "A3s": "O", "AKo": "O", "AQo": "O", "AJo": "O", "ATo": "O", "KQs": "O", "KJs": "O", "KTs": "O", "K9s": "O", "KQo": "O", "QJs": "O", "QTs": "O", "JTs": "O", "J9s": "O", "T9s": "O" },
+    "HJ": { "AA": "O", "KK": "O", "QQ": "O", "JJ": "O", "TT": "O", "99": "O", "88": "O", "77": "O", "66": "O", "55": "O", "44": "O", "AKs": "O", "AQs": "O", "AJs": "O", "ATs": "O", "A9s": "O", "A8s": "O", "A7s": "O", "A6s": "O", "A5s": "O", "A4s": "O", "A3s": "O", "A2s": "O", "AKo": "O", "AQo": "O", "AJo": "O", "ATo": "O", "KQs": "O", "KJs": "O", "KTs": "O", "K9s": "O", "K8s": "O", "KQo": "O", "KJo": "O", "QJs": "O", "QTs": "O", "Q9s": "O", "QJo": "O", "JTs": "O", "J9s": "O", "JTo": "O", "T9s": "O", "T8s": "O", "98s": "O" },
+    "CO": { "AA": "O", "KK": "O", "QQ": "O", "JJ": "O", "TT": "O", "99": "O", "88": "O", "77": "O", "66": "O", "55": "O", "44": "O", "33": "O", "AKs": "O", "AQs": "O", "AJs": "O", "ATs": "O", "A9s": "O", "A8s": "O", "A7s": "O", "A6s": "O", "A5s": "O", "A4s": "O", "A3s": "O", "A2s": "O", "AKo": "O", "AQo": "O", "AJo": "O", "ATo": "O", "A9o": "O", "KQs": "O", "KJs": "O", "KTs": "O", "K9s": "O", "K8s": "O", "K7s": "O", "K6s": "O", "KQo": "O", "KJo": "O", "KTo": "O", "QJs": "O", "QTs": "O", "Q9s": "O", "Q8s": "O", "QJo": "O", "QTo": "O", "JTs": "O", "J9s": "O", "J8s": "O", "JTo": "O", "T9s": "O", "T8s": "O", "98s": "O", "97s": "O", "87s": "O", "76s": "O", "65s": "O" },
+    "BTN": { "AA": "O", "KK": "O", "QQ": "O", "JJ": "O", "TT": "O", "99": "O", "88": "O", "77": "O", "66": "O", "55": "O", "44": "O", "33": "O", "22": "O", "AKs": "O", "AQs": "O", "AJs": "O", "ATs": "O", "A9s": "O", "A8s": "O", "A7s": "O", "A6s": "O", "A5s": "O", "A4s": "O", "A3s": "O", "A2s": "O", "AKo": "O", "AQo": "O", "AJo": "O", "ATo": "O", "A9o": "O", "A8o": "O", "A7o": "O", "A5o": "O", "KQs": "O", "KJs": "O", "KTs": "O", "K9s": "O", "K8s": "O", "K7s": "O", "K6s": "O", "K5s": "O", "K4s": "O", "K3s": "O", "K2s": "O", "KQo": "O", "KJo": "O", "KTo": "O", "K9o": "O", "QJs": "O", "QTs": "O", "Q9s": "O", "Q8s": "O", "Q7s": "O", "Q6s": "O", "Q5s": "O", "Q4s": "O", "QJo": "O", "QTo": "O", "Q9o": "O", "JTs": "O", "J9s": "O", "J8s": "O", "J7s": "O", "JTo": "O", "J9o": "O", "T9s": "O", "T8s": "O", "T7s": "O", "T9o": "O", "98s": "O", "97s": "O", "98o": "O", "87s": "O", "86s": "O", "76s": "O", "75s": "O", "65s": "O", "54s": "O" },
+    "SB": { "AA": "O", "KK": "O", "QQ": "O", "JJ": "O", "TT": "O", "99": "O", "88": "O", "77": "O", "66": "O", "55": "O", "44": "O", "33": "O", "22": "O", "AKs": "O", "AQs": "O", "AJs": "O", "ATs": "O", "A9s": "O", "A8s": "O", "A7s": "O", "A6s": "O", "A5s": "O", "A4s": "O", "A3s": "O", "A2s": "O", "AKo": "O", "AQo": "O", "AJo": "O", "ATo": "O", "A9o": "O", "A8o": "O", "KQs": "O", "KJs": "O", "KTs": "O", "K9s": "O", "K8s": "O", "K7s": "O", "KQo": "O", "KJo": "O", "KTo": "O", "QJs": "O", "QTs": "O", "Q9s": "O", "Q8s": "O", "QJo": "O", "QTo": "O", "JTs": "O", "J9s": "O", "J8s": "O", "JTo": "O", "T9s": "O", "T8s": "O", "98s": "O", "97s": "O", "87s": "O", "86s": "O", "76s": "O", "65s": "O" }
   },
   "vsOpen": {
-    "BTN_UTG": {
-      "AA": "3B", "KK": "3B", "QQ": "3B", "JJ": "C3", "TT": "C3", "99": "C3", "88": "C3", "77": "C3",
-      "AKs": "3B", "AQs": "3B", "AJs": "C3", "ATs": "C3", "A5s": "3B", "A4s": "3B",
-      "AKo": "3B", "AQo": "C3",
-      "KQs": "C3", "KJs": "C3", "KTs": "C3",
-      "QJs": "C3", "QTs": "C3",
-      "JTs": "C3",
-      "T9s": "C3"
-    },
-    "BTN_HJ": {
-      "AA": "3B", "KK": "3B", "QQ": "3B", "JJ": "3B", "TT": "C3", "99": "C3", "88": "C3", "77": "C3", "66": "C3",
-      "AKs": "3B", "AQs": "3B", "AJs": "3B", "ATs": "C3", "A9s": "C3", "A5s": "3B", "A4s": "3B", "A3s": "3B",
-      "AKo": "3B", "AQo": "3B", "AJo": "C3",
-      "KQs": "C3", "KJs": "C3", "KTs": "C3",
-      "QJs": "C3", "QTs": "C3",
-      "JTs": "C3",
-      "T9s": "C3", "98s": "C3"
-    },
-    "SB_UTG": {
-      "AA": "3B", "KK": "3B", "QQ": "3B", "JJ": "3B", "TT": "3B", "99": "C3", "88": "C3",
-      "AKs": "3B", "AQs": "3B", "AJs": "3B", "ATs": "3B", "A5s": "3B", "A4s": "3B",
-      "AKo": "3B", "AQo": "3B",
-      "KQs": "3B", "KJs": "C3",
-      "QJs": "C3"
-    },
-    "SB_HJ": {
-      "AA": "3B", "KK": "3B", "QQ": "3B", "JJ": "3B", "TT": "3B", "99": "3B", "88": "C3", "77": "C3",
-      "AKs": "3B", "AQs": "3B", "AJs": "3B", "ATs": "3B", "A9s": "3B", "A5s": "3B", "A4s": "3B", "A3s": "3B",
-      "AKo": "3B", "AQo": "3B", "AJo": "3B",
-      "KQs": "3B", "KJs": "3B", "KTs": "C3",
-      "QJs": "3B", "QTs": "C3",
-      "JTs": "C3"
-    },
-    "BB_BTN": {
-      "AA": "3B", "KK": "3B", "QQ": "3B", "JJ": "3B", "TT": "C3", "99": "C3", "88": "C3", "77": "C3", "66": "C3", "55": "C3", "44": "C3", "22": "C3",
-      "AKs": "3B", "AQs": "3B", "AJs": "3B", "ATs": "3B", "A9s": "C3", "A8s": "C3", "A7s": "C3", "A6s": "C3", "A5s": "3B", "A4s": "3B", "A3s": "3B", "A2s": "3B",
-      "AKo": "3B", "AQo": "3B", "AJo": "C3", "ATo": "C3", "A9o": "C3", "A5o": "C3",
-      "KQs": "3B", "KJs": "C3", "KTs": "C3", "K9s": "C3", "K8s": "C3", "K7s": "C3", "K6s": "C3", "K5s": "3B",
-      "KQo": "C3", "KJo": "C3", "KTo": "C3",
-      "QJs": "C3", "QTs": "C3", "Q9s": "C3", "Q8s": "C3", "Q7s": "3B",
-      "QJo": "C3", "QTo": "C3",
-      "JTs": "C3", "J9s": "C3", "J8s": "C3", "J7s": "3B",
-      "JTo": "C3",
-      "T9s": "C3", "T8s": "C3", "T7s": "3B",
-      "98s": "C3", "97s": "C3",
-      "87s": "C3", "86s": "C3",
-      "76s": "C3", "65s": "C3", "54s": "C3"
-    },
-    "BTN_BB": {
-      "AA": "3B", "KK": "3B", "QQ": "3B", "JJ": "3B", "TT": "3B", "99": "3B",
-      "AKs": "3B", "AQs": "3B", "AJs": "3B", "ATs": "3B", "A5s": "3B",
-      "AKo": "3B", "AQo": "3B", "AJo": "3B", "A5o": "C"
-    }
+    "HJ_UTG": { "AA": "3B", "KK": "3B", "QQ": "3B", "JJ": "C3", "TT": "C3", "AKs": "3B", "AQs": "C3", "AKo": "3B", "KQs": "C3" },
+    "CO_UTG": { "AA": "3B", "KK": "3B", "QQ": "3B", "JJ": "C3", "TT": "C3", "99": "C3", "AKs": "3B", "AQs": "3B", "AJs": "C3", "ATs": "C3", "A5s": "3B", "AKo": "3B", "AQo": "C3", "KQs": "C3", "KJs": "C3", "QJs": "C3", "JTs": "C3" },
+    "BTN_UTG": { "AA": "3B", "KK": "3B", "QQ": "3B", "JJ": "C3", "TT": "C3", "99": "C3", "88": "C3", "77": "C3", "AKs": "3B", "AQs": "3B", "AJs": "C3", "ATs": "C3", "A5s": "3B", "A4s": "3B", "AKo": "3B", "AQo": "C3", "KQs": "C3", "KJs": "C3", "KTs": "C3", "QJs": "C3", "QTs": "C3", "JTs": "C3", "T9s": "C3" },
+    "SB_UTG": { "AA": "3B", "KK": "3B", "QQ": "3B", "JJ": "3B", "TT": "3B", "99": "C3", "88": "C3", "AKs": "3B", "AQs": "3B", "AJs": "3B", "ATs": "3B", "A5s": "3B", "A4s": "3B", "AKo": "3B", "AQo": "3B", "KQs": "3B", "KJs": "C3", "QJs": "C3" },
+    "BB_UTG": { "AA": "3B", "KK": "3B", "QQ": "3B", "JJ": "C3", "TT": "C3", "99": "C3", "88": "C3", "77": "C3", "66": "C3", "AKs": "3B", "AQs": "3B", "AJs": "C3", "ATs": "C3", "A5s": "3B", "A4s": "3B", "AKo": "3B", "AQo": "C3", "KQs": "C3", "KJs": "C3", "QJs": "C3", "JTs": "C3" },
+    
+    "CO_HJ": { "AA": "3B", "KK": "3B", "QQ": "3B", "JJ": "3B", "TT": "C3", "99": "C3", "88": "C3", "AKs": "3B", "AQs": "3B", "AJs": "3B", "ATs": "C3", "A5s": "3B", "A4s": "3B", "AKo": "3B", "AQo": "3B", "AJo": "C3", "KQs": "C3", "KJs": "C3", "KTs": "C3", "QJs": "C3", "QTs": "C3", "JTs": "C3" },
+    "BTN_HJ": { "AA": "3B", "KK": "3B", "QQ": "3B", "JJ": "3B", "TT": "C3", "99": "C3", "88": "C3", "77": "C3", "66": "C3", "AKs": "3B", "AQs": "3B", "AJs": "3B", "ATs": "C3", "A9s": "C3", "A5s": "3B", "A4s": "3B", "A3s": "3B", "AKo": "3B", "AQo": "3B", "AJo": "C3", "KQs": "C3", "KJs": "C3", "KTs": "C3", "QJs": "C3", "QTs": "C3", "JTs": "C3", "T9s": "C3", "98s": "C3" },
+    "SB_HJ": { "AA": "3B", "KK": "3B", "QQ": "3B", "JJ": "3B", "TT": "3B", "99": "3B", "88": "C3", "77": "C3", "AKs": "3B", "AQs": "3B", "AJs": "3B", "ATs": "3B", "A9s": "3B", "A5s": "3B", "A4s": "3B", "A3s": "3B", "AKo": "3B", "AQo": "3B", "AJo": "3B", "KQs": "3B", "KJs": "3B", "KTs": "C3", "QJs": "3B", "QTs": "C3", "JTs": "C3" },
+    "BB_HJ": { "AA": "3B", "KK": "3B", "QQ": "3B", "JJ": "3B", "TT": "C3", "99": "C3", "88": "C3", "77": "C3", "66": "C3", "55": "C3", "AKs": "3B", "AQs": "3B", "AJs": "C3", "ATs": "C3", "A9s": "C3", "A5s": "3B", "A4s": "3B", "AKo": "3B", "AQo": "3B", "AJo": "C3", "KQs": "C3", "KJs": "C3", "QJs": "C3", "JTs": "C3", "T9s": "C3" },
+    
+    "BTN_CO": { "AA": "3B", "KK": "3B", "QQ": "3B", "JJ": "3B", "TT": "3B", "99": "C3", "88": "C3", "77": "C3", "66": "C3", "AKs": "3B", "AQs": "3B", "AJs": "3B", "ATs": "3B", "A9s": "C3", "A5s": "3B", "A4s": "3B", "A3s": "3B", "AKo": "3B", "AQo": "3B", "AJo": "3B", "ATo": "C3", "KQs": "3B", "KJs": "C3", "KTs": "C3", "K9s": "C3", "QJs": "C3", "QTs": "C3", "JTs": "C3", "T9s": "C3", "98s": "C3", "87s": "C3" },
+    "SB_CO": { "AA": "3B", "KK": "3B", "QQ": "3B", "JJ": "3B", "TT": "3B", "99": "3B", "88": "3B", "77": "C3", "AKs": "3B", "AQs": "3B", "AJs": "3B", "ATs": "3B", "A9s": "3B", "A8s": "3B", "A5s": "3B", "A4s": "3B", "A3s": "3B", "AKo": "3B", "AQo": "3B", "AJo": "3B", "ATo": "3B", "KQs": "3B", "KJs": "3B", "KTs": "3B", "QJs": "3B", "QTs": "3B", "JTs": "C3" },
+    "BB_CO": { "AA": "3B", "KK": "3B", "QQ": "3B", "JJ": "3B", "TT": "C3", "99": "C3", "88": "C3", "77": "C3", "66": "C3", "55": "C3", "44": "C3", "AKs": "3B", "AQs": "3B", "AJs": "3B", "ATs": "C3", "A9s": "C3", "A8s": "C3", "A5s": "3B", "A4s": "3B", "AKo": "3B", "AQo": "3B", "AJo": "C3", "ATo": "C3", "KQs": "C3", "KJs": "C3", "KTs": "C3", "QJs": "C3", "QTs": "C3", "JTs": "C3", "T9s": "C3", "98s": "C3" },
+    
+    "SB_BTN": { "AA": "3B", "KK": "3B", "QQ": "3B", "JJ": "3B", "TT": "3B", "99": "3B", "88": "3B", "77": "3B", "66": "C3", "AKs": "3B", "AQs": "3B", "AJs": "3B", "ATs": "3B", "A9s": "3B", "A8s": "3B", "A7s": "3B", "A6s": "3B", "A5s": "3B", "A4s": "3B", "A3s": "3B", "A2s": "3B", "AKo": "3B", "AQo": "3B", "AJo": "3B", "ATo": "3B", "A9o": "3B", "A8o": "3B", "KQs": "3B", "KJs": "3B", "KTs": "3B", "K9s": "3B", "K8s": "3B", "K7s": "3B", "QJs": "3B", "QTs": "3B", "Q9s": "3B", "Q8s": "3B", "JTs": "3B", "J9s": "3B", "T9s": "3B", "98s": "3B" },
+    "BB_BTN": { "AA": "3B", "KK": "3B", "QQ": "3B", "JJ": "3B", "TT": "C3", "99": "C3", "88": "C3", "77": "C3", "66": "C3", "55": "C3", "44": "C3", "22": "C3", "AKs": "3B", "AQs": "3B", "AJs": "3B", "ATs": "3B", "A9s": "C3", "A8s": "C3", "A7s": "C3", "A6s": "C3", "A5s": "3B", "A4s": "3B", "A3s": "3B", "A2s": "3B", "AKo": "3B", "AQo": "3B", "AJo": "C3", "ATo": "C3", "A9o": "C3", "A5o": "C3", "KQs": "3B", "KJs": "C3", "KTs": "C3", "K9s": "C3", "K8s": "C3", "K7s": "C3", "K6s": "C3", "K5s": "3B", "KQo": "C3", "KJo": "C3", "KTo": "C3", "QJs": "C3", "QTs": "C3", "Q9s": "C3", "Q8s": "C3", "Q7s": "3B", "QJo": "C3", "QTo": "C3", "JTs": "C3", "J9s": "C3", "J8s": "C3", "J7s": "3B", "JTo": "C3", "T9s": "C3", "T8s": "C3", "T7s": "3B", "98s": "C3", "97s": "C3", "87s": "C3", "86s": "C3", "76s": "C3", "65s": "C3", "54s": "C3" },
+    
+    "BB_SB": { "AA": "3B", "KK": "3B", "QQ": "3B", "JJ": "3B", "TT": "3B", "99": "3B", "88": "C3", "77": "C3", "66": "C3", "55": "C3", "AKs": "3B", "AQs": "3B", "AJs": "3B", "ATs": "3B", "A9s": "3B", "A8s": "3B", "A7s": "3B", "A5s": "3B", "A4s": "3B", "AKo": "3B", "AQo": "3B", "AJo": "3B", "ATo": "3B", "A5o": "C3", "KQs": "3B", "KJs": "3B", "KTs": "3B", "QJs": "3B", "QTs": "3B", "JTs": "3B", "T9s": "C3", "98s": "C3" }
   },
   "vs3bet": {
-    "SB_UTG": {
-      "AA": "4B", "KK": "4B", "QQ": "C4", "JJ": "C4", "TT": "C4",
-      "AKs": "4B", "AQs": "C4", "AJs": "C4", "ATs": "C4", "A5s": "B4", "A4s": "B4",
-      "AKo": "C4", "AQo": "F",
-      "KQs": "C4", "KJs": "C4",
-      "QJs": "C4"
-    },
-    "SB_HJ": {
-      "AA": "4B", "KK": "4B", "QQ": "C4", "JJ": "C4", "TT": "C4",
-      "AKs": "4B", "AQs": "C4", "AJs": "C4", "ATs": "C4", "A5s": "B4", "A4s": "B4",
-      "AKo": "C4", "AQo": "F",
-      "KQs": "C4", "KJs": "C4",
-      "QJs": "C4"
-    },
-    "SB_BTN": {
-      "AA": "4B", "KK": "4B", "QQ": "4B", "JJ": "C4", "TT": "C4", "99": "C4", "88": "C4",
-      "AKs": "4B", "AQs": "4B", "AJs": "C4", "ATs": "C4", "A9s": "C4", "A5s": "B4", "A4s": "B4", "A3s": "B4",
-      "AKo": "4B", "AQo": "C4", "AJo": "C4",
-      "KQs": "C4", "KJs": "C4", "KTs": "C4",
-      "QJs": "C4", "QTs": "C4",
-      "JTs": "C4"
-    },
-    "BB_BTN": {
-      "AA": "4B", "KK": "4B", "QQ": "4B", "JJ": "4B", "TT": "C4", "99": "C4", "88": "C4",
-      "AKs": "4B", "AQs": "4B", "AJs": "C4", "ATs": "C4", "A9s": "C4", "A5s": "B4", "A4s": "B4", "A3s": "B4",
-      "AKo": "4B", "AQo": "4B", "AJo": "C4",
-      "KQs": "C4", "KJs": "C4", "KTs": "C4",
-      "QJs": "C4", "QTs": "C4",
-      "JTs": "C4"
-    }
+    "UTG_HJ": { "AA": "4B", "KK": "4B", "QQ": "C4", "JJ": "C4", "TT": "C4", "AKs": "4B", "AQs": "C4", "AJs": "C4", "AKo": "C4", "KQs": "C4" },
+    
+    "UTG_CO": { "AA": "4B", "KK": "4B", "QQ": "C4", "JJ": "C4", "TT": "C4", "AKs": "4B", "AQs": "C4", "AJs": "C4", "AKo": "C4", "KQs": "C4" },
+    "HJ_CO": { "AA": "4B", "KK": "4B", "QQ": "C4", "JJ": "C4", "TT": "C4", "AKs": "4B", "AQs": "C4", "AJs": "C4", "AKo": "C4", "KQs": "C4" },
+    
+    "UTG_BTN": { "AA": "4B", "KK": "4B", "QQ": "C4", "JJ": "C4", "TT": "C4", "AKs": "4B", "AQs": "C4", "AJs": "C4", "AKo": "C4", "KQs": "C4" },
+    "HJ_BTN": { "AA": "4B", "KK": "4B", "QQ": "C4", "JJ": "C4", "TT": "C4", "AKs": "4B", "AQs": "C4", "AJs": "C4", "AKo": "C4", "KQs": "C4" },
+    "CO_BTN": { "AA": "4B", "KK": "4B", "QQ": "C4", "JJ": "C4", "TT": "C4", "AKs": "4B", "AQs": "C4", "AJs": "C4", "AKo": "C4", "KQs": "C4" },
+    
+    "UTG_SB": { "AA": "4B", "KK": "4B", "QQ": "C4", "JJ": "C4", "TT": "C4", "AKs": "4B", "AQs": "C4", "AJs": "C4", "ATs": "C4", "A5s": "B4", "A4s": "B4", "AKo": "C4", "AQo": "F", "KQs": "C4", "KJs": "C4", "QJs": "C4" },
+    "HJ_SB": { "AA": "4B", "KK": "4B", "QQ": "C4", "JJ": "C4", "TT": "C4", "AKs": "4B", "AQs": "C4", "AJs": "C4", "ATs": "C4", "A5s": "B4", "A4s": "B4", "AKo": "C4", "AQo": "F", "KQs": "C4", "KJs": "C4", "QJs": "C4" },
+    "CO_SB": { "AA": "4B", "KK": "4B", "QQ": "4B", "JJ": "C4", "TT": "C4", "99": "C4", "AKs": "4B", "AQs": "4B", "AJs": "C4", "ATs": "C4", "A5s": "B4", "A4s": "B4", "AKo": "4B", "AQo": "C4", "KQs": "C4", "KJs": "C4", "QJs": "C4" },
+    "BTN_SB": { "AA": "4B", "KK": "4B", "QQ": "4B", "JJ": "C4", "TT": "C4", "99": "C4", "88": "C4", "AKs": "4B", "AQs": "4B", "AJs": "C4", "ATs": "C4", "A9s": "C4", "A5s": "B4", "A4s": "B4", "A3s": "B4", "AKo": "4B", "AQo": "C4", "AJo": "C4", "KQs": "C4", "KJs": "C4", "KTs": "C4", "QJs": "C4", "QTs": "C4", "JTs": "C4" },
+    
+    "UTG_BB": { "AA": "4B", "KK": "4B", "QQ": "C4", "JJ": "C4", "TT": "C4", "AKs": "4B", "AQs": "C4", "AJs": "C4", "AKo": "C4", "KQs": "C4" },
+    "HJ_BB": { "AA": "4B", "KK": "4B", "QQ": "C4", "JJ": "C4", "TT": "C4", "AKs": "4B", "AQs": "C4", "AJs": "C4", "AKo": "C4", "KQs": "C4" },
+    "CO_BB": { "AA": "4B", "KK": "4B", "QQ": "4B", "JJ": "C4", "TT": "C4", "AKs": "4B", "AQs": "4B", "AJs": "C4", "AKo": "4B", "AQo": "C4", "KQs": "C4" },
+    "BTN_BB": { "AA": "4B", "KK": "4B", "QQ": "4B", "JJ": "4B", "TT": "C4", "99": "C4", "88": "C4", "AKs": "4B", "AQs": "4B", "AJs": "C4", "ATs": "C4", "A9s": "C4", "A5s": "B4", "A4s": "B4", "A3s": "B4", "AKo": "4B", "AQo": "4B", "AJo": "C4", "KQs": "C4", "KJs": "C4", "KTs": "C4", "QJs": "C4", "QTs": "C4", "JTs": "C4" },
+    "SB_BB": { "AA": "4B", "KK": "4B", "QQ": "4B", "JJ": "4B", "TT": "C4", "99": "C4", "AKs": "4B", "AQs": "4B", "AJs": "C4", "ATs": "C4", "A5s": "B4", "AKo": "4B", "AQo": "4B", "AJo": "C4" }
   },
   "vs4bet": {
-    "UTG_BTN": {
-      "AA": "5B", "KK": "5B", "QQ": "C5", "JJ": "F",
-      "AKs": "5B", "AQs": "C5",
-      "AKo": "5B"
-    },
-    "HJ_BTN": {
-      "AA": "5B", "KK": "5B", "QQ": "C5", "JJ": "C5",
-      "AKs": "5B", "AQs": "C5", "AJs": "C5",
-      "AKo": "5B", "AQo": "C5"
-    },
-    "BTN_SB": {
-      "AA": "5B", "KK": "5B", "QQ": "5B", "JJ": "C5", "TT": "C5",
-      "AKs": "5B", "AQs": "C5", "AJs": "C5", "ATs": "C5",
-      "AKo": "5B", "AQo": "C5"
-    },
-    "BTN_BB": {
-      "AA": "5B", "KK": "5B", "QQ": "5B", "JJ": "C5", "TT": "C5",
-      "AKs": "5B", "AQs": "C5", "AJs": "C5", "ATs": "C5",
-      "AKo": "5B", "AQo": "C5"
-    }
+    "UTG_CO": { "AA": "5B", "KK": "5B", "QQ": "C5", "AKs": "5B", "AKo": "5B" },
+    "UTG_BTN": { "AA": "5B", "KK": "5B", "QQ": "C5", "AKs": "5B", "AKo": "5B" },
+    "UTG_SB": { "AA": "5B", "KK": "5B", "QQ": "C5", "AKs": "5B", "AKo": "5B" },
+    "UTG_BB": { "AA": "5B", "KK": "5B", "QQ": "C5", "AKs": "5B", "AKo": "5B" },
+    
+    "HJ_UTG": { "AA": "5B", "KK": "5B", "QQ": "C5", "JJ": "F", "AKs": "5B", "AKo": "5B" },
+    "HJ_CO": { "AA": "5B", "KK": "5B", "QQ": "C5", "AKs": "5B", "AKo": "5B" },
+    "HJ_BTN": { "AA": "5B", "KK": "5B", "QQ": "C5", "AKs": "5B", "AKo": "5B" },
+    "HJ_SB": { "AA": "5B", "KK": "5B", "QQ": "C5", "AKs": "5B", "AKo": "5B" },
+    "HJ_BB": { "AA": "5B", "KK": "5B", "QQ": "C5", "AKs": "5B", "AKo": "5B" },
+    
+    "CO_UTG": { "AA": "5B", "KK": "5B", "QQ": "C5", "JJ": "F", "AKs": "5B", "AKo": "5B" },
+    "CO_HJ": { "AA": "5B", "KK": "5B", "QQ": "C5", "JJ": "F", "AKs": "5B", "AKo": "5B" },
+    "CO_BTN": { "AA": "5B", "KK": "5B", "QQ": "C5", "AKs": "5B", "AKo": "5B" },
+    "CO_SB": { "AA": "5B", "KK": "5B", "QQ": "C5", "AKs": "5B", "AKo": "5B" },
+    "CO_BB": { "AA": "5B", "KK": "5B", "QQ": "C5", "AKs": "5B", "AKo": "5B" },
+    
+    "BTN_UTG": { "AA": "5B", "KK": "5B", "QQ": "C5", "JJ": "F", "AKs": "5B", "AKo": "5B" },
+    "BTN_HJ": { "AA": "5B", "KK": "5B", "QQ": "C5", "JJ": "F", "AKs": "5B", "AKo": "5B" },
+    "BTN_CO": { "AA": "5B", "KK": "5B", "QQ": "C5", "JJ": "F", "AKs": "5B", "AKo": "5B" },
+    "BTN_SB": { "AA": "5B", "KK": "5B", "QQ": "C5", "AKs": "5B", "AKo": "5B" },
+    "BTN_BB": { "AA": "5B", "KK": "5B", "QQ": "C5", "AKs": "5B", "AKo": "5B" },
+    
+    "SB_UTG": { "AA": "5B", "KK": "5B", "QQ": "C5", "JJ": "F", "AKs": "5B", "AQs": "C5", "AKo": "5B" },
+    "SB_HJ": { "AA": "5B", "KK": "5B", "QQ": "C5", "JJ": "C5", "AKs": "5B", "AQs": "C5", "AJs": "C5", "AKo": "5B", "AQo": "C5" },
+    "SB_CO": { "AA": "5B", "KK": "5B", "QQ": "5B", "JJ": "C5", "TT": "C5", "AKs": "5B", "AQs": "C5", "AJs": "C5", "AKo": "5B", "AQo": "C5" },
+    "SB_BTN": { "AA": "5B", "KK": "5B", "QQ": "5B", "JJ": "C5", "TT": "C5", "AKs": "5B", "AQs": "C5", "AJs": "C5", "ATs": "C5", "AKo": "5B", "AQo": "C5" },
+    "SB_BB": { "AA": "5B", "KK": "5B", "QQ": "5B", "JJ": "C5", "AKs": "5B", "AQs": "C5", "AKo": "5B" },
+    
+    "BB_UTG": { "AA": "5B", "KK": "5B", "QQ": "C5", "JJ": "F", "AKs": "5B", "AQs": "C5", "AKo": "5B" },
+    "BB_HJ": { "AA": "5B", "KK": "5B", "QQ": "C5", "JJ": "C5", "AKs": "5B", "AQs": "C5", "AJs": "C5", "AKo": "5B", "AQo": "C5" },
+    "BB_CO": { "AA": "5B", "KK": "5B", "QQ": "5B", "JJ": "C5", "TT": "C5", "AKs": "5B", "AQs": "C5", "AJs": "C5", "AKo": "5B", "AQo": "C5" },
+    "BB_BTN": { "AA": "5B", "KK": "5B", "QQ": "5B", "JJ": "C5", "TT": "C5", "AKs": "5B", "AQs": "C5", "AJs": "C5", "ATs": "C5", "AKo": "5B", "AQo": "C5" },
+    "BB_SB": { "AA": "5B", "KK": "5B", "QQ": "5B", "JJ": "C5", "AKs": "5B", "AQs": "C5", "AKo": "5B" }
   }
 }

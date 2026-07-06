@@ -2,282 +2,308 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LUNA Hacker - Poker Range v2</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preflop Range Matrix</title>
     <style>
         :root {
-            --bg-color: #121214;
-            --card-bg: #1e1e24;
-            --text-color: #e2e8f0;
-            --primary: #8b5cf6;
-            
-            /* カラー定義（グラデーションやストライプにする場合はJS側で制御） */
-            --color-fold: #334155;
-            --color-fold-call: #475569; /* 混合用暫定 */
-            --color-call: #10b981;
-            --color-call-3b: #0ea5e9;
-            --color-3b: #3b82f6;
-            --color-3b-bluff: #a855f7;
-            --color-call-4b: #f59e0b;
-            --color-4b: #ef4444;
-            --color-4b-bluff: #ec4899;
-            --color-call-5b: #f97316;
-            --color-5b: #dc2626;
-            --color-allin: #b91c1c;
+            --bg-color: #1a1a1a;
+            --card-bg: #2a2a2a;
+            --text-color: #ffffff;
+            --border-color: #444444;
+            /* 凡例コードと一貫性を持たせるため、変数名を修正 */
+            --fold: #3a3a3a;
+            --open: #ff4d4d;
+            --cc: #4da6ff;     /* Callを--ccに統一 */
+            --raise3p: #ffaa00;
+            --raise3: #ffaa00; /* 3betを共通化 */
+            --fold3: #777777;
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-user-select: none; user-select: none; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--bg-color); color: var(--text-color); padding: 10px; min-height: 100vh; display: flex; flex-direction: column; }
-        h1 { font-size: 1.2rem; text-align: center; margin-bottom: 10px; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; }
-        
-        .selector-container { display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; background: var(--card-bg); padding: 10px; border-radius: 8px; }
-        .row { display: flex; align-items: center; gap: 10px; }
-        .row-label { font-size: 0.8rem; font-weight: bold; width: 80px; color: #94a3b8; }
-        .btn-group { display: flex; flex-wrap: wrap; gap: 5px; flex: 1; }
-        button { background: #2d2d39; color: #94a3b8; border: none; padding: 6px 12px; font-size: 0.8rem; font-weight: bold; border-radius: 4px; cursor: pointer; transition: all 0.2s; }
-        button.active { background: var(--primary); color: #fff; }
 
-        /* 凡例エリア */
-        .legend { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin-bottom: 10px; font-size: 0.75rem; background: #1a1a20; padding: 8px; border-radius: 6px; }
-        .legend-item { display: flex; align-items: center; gap: 4px; display: none; }
-        .dot { width: 12px; height: 12px; border-radius: 2px; }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
 
-        .grid-container { display: flex; justify-content: center; align-items: center; flex: 1; margin-bottom: 10px; }
-        .grid { display: grid; grid-template-columns: repeat(13, 1fr); gap: 1px; width: 100%; max-width: 400px; aspect-ratio: 1; background: #2d2d39; border: 1px solid #2d2d39; }
-        .cell { display: flex; justify-content: center; align-items: center; font-size: 0.6rem; font-weight: bold; color: #fff; background: var(--color-fold); aspect-ratio: 1; border-radius: 1px; text-shadow: 1px 1px 1px rgba(0,0,0,0.5); }
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 20px;
+        }
+
+        .control-panel {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            height: fit-content;
+        }
+
+        .matrix-panel {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .selector-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        select {
+            width: 100%;
+            padding: 10px;
+            background: #333;
+            color: white;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .legend-container {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            margin-right: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .matrix-grid {
+            display: grid;
+            grid-template-columns: repeat(13, 1fr);
+            gap: 2px;
+            aspect-ratio: 1;
+            width: 100%;
+        }
+
+        .cell {
+            background: var(--fold);
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 500;
+            border-radius: 2px;
+            cursor: pointer;
+            user-select: none;
+            transition: transform 0.1s;
+            border: 1px solid rgba(0,0,0,0.2);
+        }
+
+        .cell:hover {
+            transform: scale(1.05);
+            z-index: 1;
+            box-shadow: 0 0 8px rgba(0,0,0,0.5);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
 
-    <h1>LUNA Hacker Range</h1>
-
-    <div class="selector-container">
-        <!-- シチュエーション（日本語化） -->
-        <div class="row">
-            <div class="row-label">状況</div>
-            <div class="btn-group" id="situation-group">
-                <button class="active" onclick="changeSituation('open')">OPEN</button>
-                <button onclick="changeSituation('vsOpen')">対OPEN</button>
-                <button onclick="changeSituation('vs3bet')">対3BET</button>
-                <button onclick="changeSituation('vs4bet')">対4BET</button>
-            </div>
+<div class="container">
+    <div class="control-panel">
+        <div class="selector-group">
+            <label for="situation-select">Situation</label>
+            <select id="situation-select">
+                <option value="open">vs Open</option>
+                <option value="3bet">vs 3Bet</option>
+            </select>
         </div>
-        <div id="dynamic-selectors"></div>
+
+        <div class="selector-group">
+            <label for="position-select">Hero Position</label>
+            <select id="position-select">
+                <option value="UTG">UTG</option>
+                <option value="HJ">HJ</option>
+                <option value="CO">CO</option>
+                <option value="BTN">BTN</option>
+                <option value="SB">SB</option>
+                <option value="BB">BB</option>
+            </select>
+        </div>
+
+        <div class="legend-container" id="legend-box">
+            <!-- 凡例が動的に生成されます -->
+        </div>
     </div>
 
-    <!-- 動的凡例（状況に応じてJavaScriptで出し分け） -->
-    <div class="legend" id="legend-container"></div>
-
-    <div class="grid-container">
-        <div class="grid" id="matrix"></div>
+    <div class="matrix-panel">
+        <div class="matrix-grid" id="matrix"></div>
     </div>
+</div>
 
-    <script>
-        const ranks = ['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2'];
-        const cells = [];
-        let rangeData = {}; // JSONから読み込む用
-
-        // 全全ハンド生成
-        for (let r = 0; r < 13; r++) {
-            for (let c = 0; c < 13; c++) {
-                if (r < c) cells.push(ranks[r] + ranks[c] + 's');
-                else if (r > c) cells.push(ranks[c] + ranks[r] + 'o');
-                else cells.push(ranks[r] + ranks[c]);
-            }
+<script>
+    // テスト用のダミーデータ（混合戦略のパターンテストを含む）
+    const ranges = {
+        "open": {
+            "UTG": { "AA": "O", "KK": "O", "QQ": "O", "AKs": "O", "AQs": "O", "AKo": "O", "A5s": "O:50,F:50" },
+            "BTN": { "AA": "O", "KK": "O", "72o": "F", "JTs": "O", "T9s": "O" }
+        },
+        "3bet": {
+            "UTG": { "AA": "R3", "KK": "R3", "QQ": "CC", "AKs": "CC", "AKo": "F3" }
         }
+    };
 
-        // アクションごとのカラーマップと日本語ラベル
-        const actionConfigs = {
-            'F':   { color: 'var(--color-fold)', label: 'フォールド' },
-            'O':   { color: 'var(--color-4b)', label: 'オープン' }, // OPEN時は一色
-            'FC':  { color: 'linear-gradient(135deg, var(--color-fold) 50%, var(--color-call) 50%)', label: 'フォールドorコール' },
-            'C':   { color: 'var(--color-call)', label: 'コール' },
-            'C3':  { color: 'linear-gradient(135deg, var(--color-call) 50%, var(--color-3b) 50%)', label: 'コールor3BET' },
-            '3B':  { color: 'var(--color-3b)', label: '3BET' },
-            'B3':  { color: 'var(--color-3b-bluff)', label: 'ブラフ3BET' },
-            'C4':  { color: 'linear-gradient(135deg, var(--color-call) 50%, var(--color-4b) 50%)', label: 'コールor4BET' },
-            '4B':  { color: 'var(--color-4b)', label: '4BET' },
-            'B4':  { color: 'var(--color-4b-bluff)', label: 'ブラフ4BET' },
-            'C5':  { color: 'linear-gradient(135deg, var(--color-call) 50%, var(--color-5b) 50%)', label: 'コールor5BET' },
-            '5B':  { color: 'var(--color-5b)', label: '5BET' },
-            'AI':  { color: 'var(--color-allin)', label: 'オールイン' }
-        };
+    const RANKS = ['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2'];
 
-        // 各シチュエーションで表示する凡例のグループ
-        const legendGroups = {
-            open: ['F', 'O'],
-            vsOpen: ['F', 'C', 'C3', '3B', 'B3'],
-            vs3bet: ['F', 'FC', 'C', 'C4', '4B', 'B4'],
-            vs4bet: ['F', 'C', 'C5', '5B', 'AI']
-        };
+    // 凡例の定義
+    const legends = {
+        "open": [
+            { code: "O", label: "Open Raise", color: "var(--open)" },
+            { code: "F", label: "Fold", color: "var(--fold)" }
+        ],
+        "3bet": [
+            { code: "R3", label: "3Bet / 4Bet Raise", color: "var(--raise3)" },
+            { code: "CC", label: "Cold Call", color: "var(--cc)" },
+            { code: "F3", label: "Fold vs 3Bet", color: "var(--fold3)" }
+        ]
+    };
 
-        let currentSit = 'open';
-        let myPos = 'UTG';
-        let oppPos = 'HJ';
+    // ヘルパー関数: アクションコードに対応するカラー変数を返す
+    function getLegendColor(code, situation) {
+        const currentLegends = legends[situation] || [];
+        const found = currentLegends.find(l => l.code === code);
+        return found ? found.color : "var(--fold)";
+    }
 
-        // 外部JSONの読み込み
-        async function loadRanges() {
-            try {
-                const response = await fetch('ranges.json');
-                rangeData = await response.json();
-                init();
-            } catch (error) {
-                console.error("レンジデータの読み込みに失敗しました:", error);
-                // 落ちた場合のモック
-                rangeData = { open: {}, vsOpen: {}, vs3bet: {}, vs4bet: {} };
-                init();
-            }
-        }
+    // 凡例の描画
+    function updateLegend() {
+        const situation = document.getElementById('situation-select').value;
+        const box = document.getElementById('legend-box');
+        box.innerHTML = '';
 
-        function init() {
-            const grid = document.getElementById('matrix');
-            grid.innerHTML = '';
-            cells.forEach(hand => {
+        const list = legends[situation] || [];
+        list.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'legend-item';
+            div.innerHTML = `
+                <div class="legend-color" style="background: ${item.color}"></div>
+                <span>${item.label}</span>
+            `;
+            box.appendChild(div);
+        });
+    }
+
+    // マトリックスの生成
+    function createMatrix() {
+        const matrix = document.getElementById('matrix');
+        matrix.innerHTML = '';
+
+        for (let i = 0; i < 13; i++) {
+            for (let j = 0; j < 13; j++) {
+                let hand = "";
+                if (i < j) {
+                    hand = RANKS[i] + RANKS[j] + 's';
+                } else if (i > j) {
+                    hand = RANKS[j] + RANKS[i] + 'o';
+                } else {
+                    hand = RANKS[i] + RANKS[j];
+                }
+
                 const cell = document.createElement('div');
                 cell.className = 'cell';
-                cell.id = 'hand-' + hand;
-                cell.innerText = hand;
-                grid.appendChild(cell);
-            });
-            changeSituation('open');
-        }
-
-        function changeSituation(sit) {
-            currentSit = sit;
-            // 初期ポジション調整
-            if (sit === 'open') { myPos = 'UTG'; }
-            else if (sit === 'vsOpen') { oppPos = 'UTG'; myPos = 'HJ'; }
-            else { oppPos = 'HJ'; myPos = 'UTG'; } // vs3b, vs4b
-
-            renderSelectors();
-            renderLegend();
-            updateDisplay();
-        }
-
-        function renderSelectors() {
-            const container = document.getElementById('dynamic-selectors');
-            container.innerHTML = '';
-
-            const myRow = `<div class="row"><div class="row-label">自分の位置</div><div class="btn-group" id="mypos-group"></div></div>`;
-            const oppRow = `<div class="row"><div class="row-label">相手の位置</div><div class="btn-group" id="oppos-group"></div></div>`;
-
-            if (currentSit === 'open') {
-                container.innerHTML = myRow;
-            } else if (currentSit === 'vsOpen') {
-                container.innerHTML = oppRow + myRow; // 相手が先、自分が後
-            } else {
-                container.innerHTML = oppRow + myRow; // vs3b, vs4b も同様
+                cell.id = `cell-${hand}`;
+                cell.textContent = hand;
+                matrix.appendChild(cell);
             }
-
-            buildButtons();
         }
+    }
 
-        function buildButtons() {
-            const allPos = ['UTG', 'HJ', 'CO', 'BTN', 'SB', 'BB'];
-            
-            // 相手ポジションのビルド
-            const oppGroup = document.getElementById('oppos-group');
-            if (oppGroup) {
-                let allowedOpp = [...allPos];
-                if (currentSit === 'vs4bet') allowedOpp = ['UTG', 'HJ', 'CO', 'BTN', 'SB']; // BBは4Bオープンしない
-                
-                allowedOpp.forEach(pos => {
-                    const btn = document.createElement('button');
-                    btn.innerText = pos;
-                    btn.className = (pos === oppPos) ? 'active' : '';
-                    btn.onclick = () => { oppPos = pos; adjustPositions(); };
-                    oppGroup.appendChild(btn);
+    // データの適用と色の反映
+    function applyRange() {
+        const situation = document.getElementById('situation-select').value;
+        const position = document.getElementById('position-select').value;
+
+        // 全セルを一旦デフォルト（Fold）の色にリセット
+        document.querySelectorAll('.cell').forEach(el => {
+            el.style.background = "var(--fold)";
+        });
+
+        // 該当するポジションのレンジデータを取得
+        const situationData = ranges[situation] || {};
+        const posData = situationData[position] || {};
+
+        // レンジデータの適用
+        Object.keys(posData).forEach(hand => {
+            const el = document.getElementById(`cell-${hand}`);
+            if (!el) return;
+
+            const actionStr = posData[hand];
+
+            // 混合戦略の解析 (例: "O:50,F:50")
+            if (actionStr.includes(',')) {
+                const parts = actionStr.split(',');
+                let gradientStr = "linear-gradient(135deg";
+                let currentPercent = 0;
+
+                parts.forEach(part => {
+                    const [code, pctStr] = part.split(':');
+                    const pct = parseInt(pctStr, 10);
+                    const color = getLegendColor(code, situation);
+                    
+                    // グラデーションの色の切れ目をシャープにする指定
+                    gradientStr += `, ${color} ${currentPercent}%, ${color} ${currentPercent + pct}%`;
+                    currentPercent += pct;
                 });
-            }
-
-            // 自分ポジションのビルド
-            const myGroup = document.getElementById('mypos-group');
-            if (myGroup) {
-                let allowedMy = [...allPos];
-                if (currentSit === 'open') allowedMy = ['UTG', 'HJ', 'CO', 'BTN', 'SB']; // BBはオープンなし
-                else {
-                    // 自分と相手が被らないようにフィルター
-                    allowedMy = allPos.filter(p => p !== oppPos);
-                }
-
-                allowedMy.forEach(pos => {
-                    const btn = document.createElement('button');
-                    btn.innerText = pos;
-                    btn.className = (pos === myPos) ? 'active' : '';
-                    btn.onclick = () => { myPos = pos; adjustPositions(); };
-                    myGroup.appendChild(btn);
-                });
-            }
-        }
-
-        function adjustPositions() {
-            // シチュエーションボタンの活性化
-            document.querySelectorAll('#situation-group button').forEach(b => {
-                b.classList.toggle('active', b.getAttribute('onclick').includes(`'${currentSit}'`));
-            });
-            renderSelectors();
-            updateDisplay();
-        }
-
-        function renderLegend() {
-            const container = document.getElementById('legend-container');
-            container.innerHTML = '';
-            const activeActions = legendGroups[currentSit];
-            
-            activeActions.forEach(act => {
-                const config = actionConfigs[act];
-                const item = document.createElement('div');
-                item.className = 'legend-item';
-                item.style.display = 'flex';
                 
-                const dot = document.createElement('div');
-                dot.className = 'dot';
-                dot.style.background = config.color;
-                
-                const text = document.createElement('span');
-                text.innerText = config.label;
-                
-                item.appendChild(dot);
-                item.appendChild(text);
-                container.appendChild(item);
-            });
-        }
-
-        function updateDisplay() {
-            // 一旦全員フォールド色にリセット
-            cells.forEach(hand => {
-                const el = document.getElementById('hand-' + hand);
-                if (el) el.style.background = varColor('F');
-            });
-
-            if (!rangeData[currentSit]) return;
-
-            let dataNode = {};
-            if (currentSit === 'open') {
-                dataNode = rangeData.open[myPos] || {};
+                gradientStr += ")";
+                el.style.background = gradientStr;
             } else {
-                // 対系は "相手_自分" または "自分_相手" のキー構造にJSON側で合わせる
-                // ここでは一律で `相手_自分` (例: UTGがオープンしてHJが返す = UTG_HJ)
-                // vs3betなら、HJがオープンしてSBが3BしたのにHJが返す = HJ_SB
-                const key = `${oppPos}_${myPos}`;
-                dataNode = rangeData[currentSit][key] || {};
+                // 単一戦略の場合
+                el.style.background = getLegendColor(actionStr, situation);
             }
+        });
+    }
 
-            // 各ハンドの色を適用
-            Object.keys(dataNode).forEach(hand => {
-                const actionCode = dataNode[hand];
-                const el = document.getElementById('hand-' + hand);
-                if (el && actionConfigs[actionCode]) {
-                    el.style.background = actionConfigs[actionCode].color;
-                }
-            });
-        }
+    // イベントリスナーの設定
+    function init() {
+        createMatrix();
+        updateLegend();
+        applyRange();
 
-        function varColor(code) {
-            return actionConfigs[code].color;
-        }
+        document.getElementById('situation-select').addEventListener('change', () => {
+            updateLegend();
+            applyRange();
+        });
 
-        // 起動
-        loadRanges();
-    </script>
+        document.getElementById('position-select').addEventListener('change', applyRange);
+    }
+
+    window.onload = init;
+</script>
+
 </body>
 </html>
