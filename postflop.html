@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LUNA Hacker - Postflop Theory</title>
+    <style>
+        :root {
+            --bg-color: #121214;
+            --card-bg: #1e1e24;
+            --text-color: #e2e8f0;
+            --primary: #8b5cf6;
+            
+            /* アクション・強さ別カラー */
+            --color-monster: #ef4444; /* 赤 */
+            --color-pair: #10b981;    /* 緑 */
+            --color-draw: #3b82f6;    /* 青 */
+            --color-air: #64748b;     /* グレー */
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-user-select: none; user-select: none; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--bg-color); color: var(--text-color); padding: 10px; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+        h1 { font-size: 1.2rem; text-align: center; margin-bottom: 10px; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; }
+        
+        /* ページ切り替えナビゲーション */
+        .page-nav { display: flex; justify-content: center; gap: 8px; margin-bottom: 15px; width: 100%; max-width: 500px; }
+        .nav-btn { display: inline-block; text-align: center; text-decoration: none; background: #252530; color: #94a3b8; border: 1px solid #2d2d39; padding: 6px 16px; font-size: 0.8rem; font-weight: bold; border-radius: 6px; flex: 1; transition: all 0.2s; }
+        .nav-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+        /* ボードセレクトエリア */
+        .selector-container { display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; background: var(--card-bg); padding: 10px; border-radius: 8px; width: 100%; max-width: 500px; }
+        .row { display: flex; align-items: center; gap: 10px; }
+        .row-label { font-size: 0.8rem; font-weight: bold; width: 70px; color: #94a3b8; }
+        .btn-group { display: flex; flex-wrap: wrap; gap: 5px; flex: 1; }
+        .selector-container button { background: #2d2d39; color: #94a3b8; border: none; padding: 6px 12px; font-size: 0.8rem; font-weight: bold; border-radius: 4px; cursor: pointer; transition: all 0.2s; flex: 1; text-align: center; }
+        .selector-container button.active { background: var(--primary); color: #fff; }
+        .board-example { font-size: 0.75rem; color: #94a3b8; text-align: center; background: #13131a; padding: 4px; border-radius: 4px; font-family: monospace; }
+
+        /* メインコンテンツエリア */
+        .postflop-container { width: 100%; max-width: 500px; display: flex; flex-direction: column; gap: 12px; }
+        .postflop-card { background: var(--card-bg); padding: 12px; border-radius: 8px; border-left: 4px solid #fff; }
+        
+        /* ハンドランク別の左帯カラー */
+        .postflop-card.monster { border-left-color: var(--color-monster); }
+        .postflop-card.pair { border-left-color: var(--color-pair); }
+        .postflop-card.draw { border-left-color: var(--color-draw); }
+        .postflop-card.air { border-left-color: var(--color-air); }
+        
+        .postflop-title { display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; font-weight: bold; color: #fff; margin-bottom: 8px; }
+        .hand-badge { font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; color: #fff; font-weight: bold; }
+        .monster .hand-badge { background: var(--color-monster); }
+        .pair .hand-badge { background: var(--color-pair); }
+        .draw .hand-badge { background: var(--color-draw); }
+        .air .hand-badge { background: var(--color-air); }
+
+        /* タイムライン表示 */
+        .timeline { display: flex; gap: 6px; margin-bottom: 8px; background: #13131a; padding: 6px; border-radius: 6px; justify-content: space-between; }
+        .time-node { flex: 1; display: flex; flex-direction: column; align-items: center; font-size: 0.65rem; }
+        .time-label { color: #64748b; font-weight: bold; margin-bottom: 2px; font-size: 0.6rem; }
+        .size-val { padding: 3px 4px; border-radius: 4px; font-weight: bold; width: 100%; text-align: center; font-size: 0.7rem; }
+        
+        /* サイジング別カラー */
+        .size-fold  { background: rgba(100, 116, 139, 0.2); color: #94a3b8; }
+        .size-check { background: rgba(139, 92, 246, 0.2); color: #8b5cf6; }
+        .size-s     { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+        .size-m     { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
+        .size-l     { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+
+        .postflop-desc { font-size: 0.75rem; color: #cbd5e1; line-height: 1.4; border-top: 1px solid #2d2d39; padding-top: 6px; margin-top: 4px; }
+    </style>
+</head>
+<body>
+
+    <h1>Postflop Theory</h1>
+
+    <!-- ページ切り替えナビゲーション -->
+    <div class="page-nav">
+        <a href="index.html" class="nav-btn">プリフロップ</a>
+        <a href="postflop.html" class="nav-btn active">ポストフロップ</a>
+    </div>
+
+    <!-- ボードテクスチャ選択 -->
+    <div class="selector-container">
+        <div class="row">
+            <div class="row-label">ボード</div>
+            <div class="btn-group" id="board-group">
+                <button class="active" onclick="changeBoard('dry')">DRY (安全)</button>
+                <button onclick="changeBoard('wet')">WET (危険)</button>
+                <button onclick="changeBoard('mono')">MONO (特殊)</button>
+            </div>
+        </div>
+        <div class="board-example" id="board-example-text">代表例: K♦ 8♠ 2♣ / Q♦ Q♠ 4♣ (ペア・ラグ含む)</div>
+    </div>
+
+    <!-- 動的に書き換わるハンド別の戦略カード一覧 -->
+    <div class="postflop-container" id="strategy-cards"></div>
+
+    <script>
+        // 戦略データの定義（ボード×ハンドランク）
+        const theoryData = {
+            dry: {
+                example: "代表例: K♦ 8♠ 2♣ / Q♦ Q♠ 4♣ (ペア・ラグ含む)",
+                cards: [
+                    {
+                        rank: "monster",
+                        title: "① モンスター (セット/ツーペア/フルハウス)",
+                        flop: "size-s", flopTxt: "小 (25-33%)",
+                        turn: "size-l", turnTxt: "大 (75-100%)",
+                        river: "size-l", riverTxt: "大〜OB (100%+)",
+                        desc: "フロップは広く浅く相手のコールを引き出し、ターン以降で一気にポットを肥大化させて全チップを奪いに行くライン。"
+                    },
+                    {
+                        rank: "pair",
+                        title: "② マージナル (トップペア/オーバーペア/ミドル)",
+                        flop: "size-s", flopTxt: "小 (33%) / CB",
+                        turn: "size-check", turnTxt: "Check寄り",
+                        river: "size-m", riverTxt: "中 (50%) / Blfキャッチ",
+                        desc: "捲くられるリスクが低いため急ぐ必要はない。ターンはチェックバックでポットコントロールし、リバーで薄いバリューか相手のブラフをキャッチ。"
+                    },
+                    {
+                        rank: "draw",
+                        title: "③ ドロー (ガットショット/バックドア)",
+                        flop: "size-s", flopTxt: "小 (25-33%)",
+                        turn: "size-check", turnTxt: "Check",
+                        river: "size-fold", riverTxt: "Fold / 諦め",
+                        desc: "ドライボードのドローはアウツが少ないため過信禁物。フロップはCBに混ぜて安く打つが、ターンで発展しなければおとなしくチェックで引く。"
+                    },
+                    {
+                        rank: "air",
+                        title: "④ エアー (ツーオーバー/Aハイハズレ)",
+                        flop: "size-s", flopTxt: "小 (25-33%) / CB",
+                        turn: "size-check", turnTxt: "Check / 諦め",
+                        river: "size-fold", riverTxt: "Fold",
+                        desc: "相手も高確率で外しているため、フロップの「安いCB」のブラフ成功率が最も高い。コールされたら無理せず即撤退。"
+                    }
+                ]
+            },
+            wet: {
+                example: "代表例: J♦ T♣ 9♥ / A♦ K♠ Q♣ (ストドロ・ハイカード混雑)",
+                cards: [
+                    {
+                        rank: "monster",
+                        title: "① モンスター (ストレート/セット/強いツーペア)",
+                        flop: "size-m", flopTxt: "中〜大 (50-75%)",
+                        turn: "size-l", turnTxt: "大 (75-100%)",
+                        river: "size-l", riverTxt: "大〜OB",
+                        desc: "次のカードで簡単に捲くられる危険地帯。ドローを持っている相手に無料で見せないよう、フロップから重い代償（プロテクション）を支払わせる。"
+                    },
+                    {
+                        rank: "pair",
+                        title: "② マージナル (トップペアキッカー弱/ミドルペア)",
+                        flop: "size-m", flopTxt: "中 (50%) / Check",
+                        turn: "size-check", turnTxt: "Check",
+                        river: "size-fold", riverTxt: "Fold / 慎重コール",
+                        desc: "相手のレイズや強いベットに対して非常に脆いハンド。自分から大きく打ってポットを膨らませず、チェックを多用して安くショーダウンを目指す。"
+                    },
+                    {
+                        rank: "draw",
+                        title: "③ ドロー (両面ストドロ/フラドロ)",
+                        flop: "size-m", flopTxt: "中〜大 (50-75%)",
+                        turn: "size-l", turnTxt: "大 (75%) / セミBlf",
+                        river: "size-l", riverTxt: "OBブラフ / 役完成バリュー",
+                        desc: "強いドローは最強のブラフ候補（セミブラフ）。フロップ・ターンと強気に打ち続けて相手のフォールドを狙い、リバーで完成したら特大バリューに変貌。"
+                    },
+                    {
+                        rank: "air",
+                        title: "④ エアー (完全なハズレ/ローカード)",
+                        flop: "size-check", flopTxt: "Check / Give up",
+                        turn: "size-fold", turnTxt: "Fold",
+                        river: "size-fold", riverTxt: "Fold",
+                        desc: "相手のレンジ（絡んでいる確率）が強すぎるため、ブラフCBの効果が薄い。無駄なチップを1枚も払わず、フロップ時点で即座に諦めるのがセオリー。"
+                    }
+                ]
+            },
+            mono: {
+                example: "代表例: A♠ 9♠ 4♠ (同色3枚 / フラッシュ完成ボード)",
+                cards: [
+                    {
+                        rank: "monster",
+                        title: "① モンスター (完成フラッシュ/セット)",
+                        flop: "size-xs", flopTxt: "極小 (20%) / Check",
+                        turn: "size-m", turnTxt: "中 (50%)",
+                        river: "size-l", riverTxt: "中〜大 (75%)",
+                        desc: "自分がフラッシュでも相手が引いている可能性が高く、大ベットすると相手のさらに強いフラッシュ以外全員降りてしまう。罠を張るように小さく展開。"
+                    },
+                    {
+                        rank: "pair",
+                        title: "② マージナル (上位ワンペア/A持ちワンペア)",
+                        flop: "size-check", flopTxt: "Check",
+                        turn: "size-check", turnTxt: "Check",
+                        river: "size-xs", riverTxt: "Check / 安いコール",
+                        desc: "ボードにフラッシュの完成形が見えているため、ただのワンペアの価値は暴落。ベットしても最悪の結果にしかならないので、完全チェックで耐える展開。"
+                    },
+                    {
+                        rank: "draw",
+                        title: "③ ドロー (4枚目の同色を狙う1枚持ちドロー)",
+                        flop: "size-xs", flopTxt: "極小 (20%) / CB",
+                        turn: "size-check", turnTxt: "Check",
+                        river: "size-fold", riverTxt: "Fold / ナッツブラフ",
+                        desc: "自分が「A♠」などのナッツ（最強）スートを1枚持っている場合、フロップは小さくブラフ可能。引けなければターン以降は大人しくチェック。"
+                    },
+                    {
+                        rank: "air",
+                        title: "④ エアー (スートすら絡まない完全ハズレ)",
+                        flop: "size-check", flopTxt: "Check / Give up",
+                        turn: "size-fold", turnTxt: "Fold",
+                        river: "size-fold", riverTxt: "Fold",
+                        desc: "最もプレイしてはいけない環境。誰もが警戒して慎重になるためブラフも効かない。速やかにチェックフォールドの選択を取る。"
+                    }
+                ]
+            }
+        };
+
+        // 画面切り替え処理
+        function changeBoard(type) {
+            // ボタンの活性化切り替え
+            document.querySelectorAll('#board-group button').forEach(b => {
+                const onclickText = b.getAttribute('onclick');
+                b.classList.toggle('active', onclickText.includes(`'${type}'`));
+            });
+
+            const data = theoryData[type];
+            
+            // 例示テキストの更新
+            document.getElementById('board-example-text').innerText = data.example;
+
+            // カードエリアの動的生成
+            const container = document.getElementById('strategy-cards');
+            container.innerHTML = '';
+
+            data.cards.forEach(c => {
+                const card = document.createElement('div');
+                card.className = `postflop-card ${c.rank}`;
+                
+                card.innerHTML = `
+                    <div class="postflop-title">
+                        <span>${c.title}</span>
+                        <span class="hand-badge">${c.rank.toUpperCase()}</span>
+                    </div>
+                    <div class="timeline">
+                        <div class="time-node"><span class="time-label">FLOP</span><span class="size-val ${c.flop}">${c.flopTxt}</span></div>
+                        <div class="time-node"><span class="time-label">TURN</span><span class="size-val ${c.turn}">${c.turnTxt}</span></div>
+                        <div class="time-node"><span class="time-label">RIVER</span><span class="size-val ${c.river}">${c.riverTxt}</span></div>
+                    </div>
+                    <div class="postflop-desc">${c.desc}</div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // 初期表示としてDRYを選択
+        changeBoard('dry');
+    </script>
+</body>
+</html>

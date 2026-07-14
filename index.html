@@ -25,6 +25,11 @@
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--bg-color); color: var(--text-color); padding: 10px; min-height: 100vh; display: flex; flex-direction: column; }
         h1 { font-size: 1.2rem; text-align: center; margin-bottom: 10px; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; }
         
+        /* ページ切り替えナビゲーション */
+        .page-nav { display: flex; justify-content: center; gap: 8px; margin-bottom: 15px; }
+        .nav-btn { display: inline-block; text-align: center; text-decoration: none; background: #252530; color: #94a3b8; border: 1px solid #2d2d39; padding: 6px 16px; font-size: 0.8rem; font-weight: bold; border-radius: 6px; flex: 1; max-width: 180px; transition: all 0.2s; }
+        .nav-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
         .selector-container { display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; background: var(--card-bg); padding: 10px; border-radius: 8px; }
         .row { display: flex; align-items: center; gap: 10px; }
         .row-label { font-size: 0.8rem; font-weight: bold; width: 80px; color: #94a3b8; }
@@ -45,6 +50,12 @@
 <body>
 
     <h1>LUNA Hacker Range</h1>
+
+    <!-- ページ切り替えナビゲーション（追加部分） -->
+    <div class="page-nav">
+        <a href="index.html" class="nav-btn active">プリフロップ</a>
+        <a href="postflop.html" class="nav-btn">ポストフロップ</a>
+    </div>
 
     <div class="selector-container">
         <!-- シチュエーション -->
