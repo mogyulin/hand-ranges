@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LUNA Hacker - Postflop Theory v2</title>
+    <title>LUNA Hacker - Postflop Theory</title>
     <style>
         :root {
             --bg-color: #121214;
@@ -11,22 +11,23 @@
             --text-color: #e2e8f0;
             --primary: #8b5cf6;
             
-            /* アクション・強さ別カラー */
+            /* ハンド・立場別カラー */
             --color-monster: #ef4444; /* 赤 */
             --color-pair: #10b981;    /* 緑 */
             --color-draw: #3b82f6;    /* 青 */
             --color-air: #64748b;     /* グレー */
+            --color-def: #f59e0b;     /* オレンジ（ディフェンダー） */
         }
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-user-select: none; user-select: none; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--bg-color); color: var(--text-color); padding: 10px; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
         h1 { font-size: 1.2rem; text-align: center; margin-bottom: 10px; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; }
         
-        /* ページ切り替えナビゲーション */
+        /* ページナビ */
         .page-nav { display: flex; justify-content: center; gap: 8px; margin-bottom: 15px; width: 100%; max-width: 500px; }
         .nav-btn { display: inline-block; text-align: center; text-decoration: none; background: #252530; color: #94a3b8; border: 1px solid #2d2d39; padding: 6px 16px; font-size: 0.8rem; font-weight: bold; border-radius: 6px; flex: 1; transition: all 0.2s; }
         .nav-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
 
-        /* セレクトエリア */
+        /* 条件セレクター */
         .selector-container { display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; background: var(--card-bg); padding: 10px; border-radius: 8px; width: 100%; max-width: 500px; }
         .row { display: flex; align-items: center; gap: 10px; }
         .row-label { font-size: 0.8rem; font-weight: bold; width: 70px; color: #94a3b8; }
@@ -35,15 +36,18 @@
         .selector-container button.active { background: var(--primary); color: #fff; }
         .board-example { font-size: 0.75rem; color: #94a3b8; text-align: center; background: #13131a; padding: 6px; border-radius: 4px; font-family: monospace; line-height: 1.3; }
 
-        /* メインコンテンツエリア */
+        /* コンテンツエリア */
         .postflop-container { width: 100%; max-width: 500px; display: flex; flex-direction: column; gap: 12px; }
+        .section-title { font-size: 0.95rem; font-weight: bold; color: #fff; border-left: 3px solid var(--primary); padding-left: 8px; margin-top: 10px; margin-bottom: 4px; }
+        
         .postflop-card { background: var(--card-bg); padding: 12px; border-radius: 8px; border-left: 4px solid #fff; }
         
-        /* ハンドランク別の左帯カラー */
+        /* 左帯カラー */
         .postflop-card.monster { border-left-color: var(--color-monster); }
         .postflop-card.pair { border-left-color: var(--color-pair); }
         .postflop-card.draw { border-left-color: var(--color-draw); }
         .postflop-card.air { border-left-color: var(--color-air); }
+        .postflop-card.defender { border-left-color: var(--color-def); }
         
         .postflop-title { display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; font-weight: bold; color: #fff; margin-bottom: 8px; }
         .hand-badge { font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; color: #fff; font-weight: bold; }
@@ -51,20 +55,25 @@
         .pair .hand-badge { background: var(--color-pair); }
         .draw .hand-badge { background: var(--color-draw); }
         .air .hand-badge { background: var(--color-air); }
+        .defender .hand-badge { background: var(--color-def); color: #121214; }
 
-        /* タイムライン表示 */
+        /* タイムライン */
         .timeline { display: flex; gap: 6px; margin-bottom: 8px; background: #13131a; padding: 6px; border-radius: 6px; justify-content: space-between; }
         .time-node { flex: 1; display: flex; flex-direction: column; align-items: center; font-size: 0.65rem; }
         .time-label { color: #64748b; font-weight: bold; margin-bottom: 2px; font-size: 0.6rem; }
         .size-val { padding: 3px 4px; border-radius: 4px; font-weight: bold; width: 100%; text-align: center; font-size: 0.7rem; }
         
-        /* サイジング別カラー */
+        /* アクション・サイジング別背景色 */
         .size-fold  { background: rgba(100, 116, 139, 0.2); color: #94a3b8; }
         .size-check { background: rgba(139, 92, 246, 0.2); color: #8b5cf6; }
         .size-s     { background: rgba(16, 185, 129, 0.2); color: #10b981; }
         .size-m     { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
         .size-l     { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
         .size-ai    { background: rgba(185, 28, 28, 0.2); color: #b91c1c; border: 1px dashed #b91c1c; }
+        
+        .act-call  { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+        .act-fold  { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+        .act-bet   { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
 
         .postflop-desc { font-size: 0.75rem; color: #cbd5e1; line-height: 1.4; border-top: 1px solid #2d2d39; padding-top: 6px; margin-top: 4px; }
     </style>
@@ -73,15 +82,13 @@
 
     <h1>Postflop Theory</h1>
 
-    <!-- ページ切り替えナビゲーション -->
     <div class="page-nav">
         <a href="index.html" class="nav-btn">プリフロップ</a>
         <a href="postflop.html" class="nav-btn active">ポストフロップ</a>
     </div>
 
-    <!-- 2段条件セレクター -->
     <div class="selector-container">
-        <!-- 1段目: ポット状況 -->
+        <!-- ポット状況 -->
         <div class="row">
             <div class="row-label">ポット</div>
             <div class="btn-group" id="pot-group">
@@ -90,7 +97,7 @@
                 <button onclick="changePot('4bet')">4BETポット</button>
             </div>
         </div>
-        <!-- 2段目: ボードテクスチャ -->
+        <!-- ボードテクスチャ -->
         <div class="row">
             <div class="row-label">ボード</div>
             <div class="btn-group" id="board-group">
@@ -102,96 +109,129 @@
         <div class="board-example" id="board-example-text">---</div>
     </div>
 
-    <!-- 動的に書き換わるハンド別の戦略カード一覧 -->
-    <div class="postflop-container" id="strategy-cards"></div>
+    <!-- メイン表示エリア -->
+    <div class="postflop-container" id="main-content"></div>
 
     <script>
-        // 完全網羅された9パターンの戦略マトリクスデータ
+        // 9パターンの戦略マトリクスデータ（アグレッサー最適化 ＆ ディフェンダー追加）
         const theoryData = {
             srp: {
                 dry: {
-                    example: "【通常・DRY】例: K♦ 8♠ 2♣ / Q♦ Q♠ 4♣<br>特徴: スタックが深く、互いにエアーが多い。広く浅いCBが超有効。",
-                    cards: [
-                        { rank: "monster", title: "① モンスター (セット/ツーペア/フルハウス)", flop: "size-s", flopTxt: "小 (25-33%)", turn: "size-l", turnTxt: "大 (75-100%)", river: "size-l", riverTxt: "大〜OB (100%+)", desc: "フロップは広く浅く相手の泥棒コールを引き出し、ターン以降で一気にポットを肥大化させて全チップを奪いに行くライン。" },
-                        { rank: "pair", title: "② マージナル (トップペア/オーバーペア/ミドル)", flop: "size-s", flopTxt: "小 (33%) / CB", turn: "size-check", turnTxt: "Check寄り", river: "size-m", riverTxt: "中 (50%) / Blfキャッチ", desc: "捲くられるリスクが低いため急ぐ必要なし。ターンはチェックでポットコントロールし、リバーで薄いバリューを取るかブラフをキャッチ。" },
+                    example: "【通常・DRY】例: K♦ 8♠ 2♣ / Q♦ Q♠ 4♣<br>特徴: スタックが深く互いにエアーが多い。アグレッサーは広く浅いCBが極めて有効。",
+                    aggressor: [
+                        { rank: "monster", title: "① モンスター (セット/ツーペア/フルハウス)", flop: "size-s", flopTxt: "小 (25-33%)", turn: "size-l", turnTxt: "大 (75-100%)", river: "size-l", riverTxt: "大〜OB (100%+)", desc: "フロップは広く浅く打って相手の泥棒コールを引き出し、ターン以降で一気にポットを肥大化させてスタックを奪いに行くライン。" },
+                        { rank: "pair", title: "② マージナル (トップペア/オーバーペア/ミドル)", flop: "size-s", flopTxt: "小 (33%) / CB", turn: "size-check", turnTxt: "Check寄り", river: "size-m", riverTxt: "中 (50%) / Blfキャッチ", desc: "捲くられるリスクが低いため急ぐ必要なし。ターンはチェックでポットコントロールし、リバーで薄いバリューを取るかブラフキャッチ。" },
                         { rank: "draw", title: "③ ドロー (ガットショット/バックドアフラドロ)", flop: "size-s", flopTxt: "小 (25-33%)", turn: "size-check", turnTxt: "Check", river: "size-fold", riverTxt: "Fold / 諦め", desc: "ドライボードの弱いドローはアウツが少ないため過信禁物。フロップはCBに混ぜて安く打つが、ターンで発展しなければ即ブレーキ。" },
                         { rank: "air", title: "④ エアー (ツーオーバー/Aハイハズレ)", flop: "size-s", flopTxt: "小 (25-33%) / CB", turn: "size-check", turnTxt: "Check / 諦め", river: "size-fold", riverTxt: "Fold", desc: "相手も高確率で外しているため、フロップの「安いCB」のブラフ成功率が最も高い。コールされたら無理せず即撤退。" }
+                    ],
+                    defender: [
+                        { act: "相手が極小〜小CBを選択", f: "act-call", fTxt: "広くCallで粘る", t: "size-check", tTxt: "相手Checkなら打つ", r: "size-check", rTxt: "Showdown目指す", desc: "広く浅いCBに対し、バックドアやポケットペア等で広くコール。ターンで相手がチェックバックしたらリバーで小さくバリューやブラフを突く。" },
+                        { act: "相手が最初からチェック", f: "size-check", fTxt: "Check / 様子見", t: "act-bet", tTxt: "小Bet (30%)", r: "size-check", rTxt: "バリュー or Check", desc: "DRYでの相手のチェックは弱気サイン多め。ターンから安く突いてポジションの有利を活かしポットを奪いに行く。" }
                     ]
                 },
                 wet: {
-                    example: "【通常・WET】例: J♦ T♣ 9♥ / A♦ K♠ Q♣<br>特徴: 相手のコールレンジにドローが大量。プロテクションが最重要。",
-                    cards: [
-                        { rank: "monster", title: "① モンスター (ストレート/セット/強いツーペア)", flop: "size-m", flopTxt: "中〜大 (50-75%)", turn: "size-l", turnTxt: "大 (75-100%)", river: "size-l", riverTxt: "大〜OB", desc: "次のカードで簡単に捲くられる危険地帯。ドローを持っている相手に無料で見せないよう、重い代償（プロテクション）を支払わせる。" },
+                    example: "【通常・WET】例: J♦ T♣ 9♥ / A♦ K♠ Q♣<br>特徴: 相手のコールレンジにドローが大量。アグレッサーはプロテクションが最重要。",
+                    aggressor: [
+                        { rank: "monster", title: "① モンスター (ストレート/セット/強いツーペア)", flop: "size-m", flopTxt: "中〜大 (55-75%)", turn: "size-l", turnTxt: "大 (75-100%)", river: "size-l", riverTxt: "大〜OB", desc: "次のカードで簡単に捲くられる危険地帯。ドローを持っている相手に無料で見せないよう、重い代償（プロテクション）を支払わせる。" },
                         { rank: "pair", title: "② マージナル (トップペアキッカー弱/ミドルペア)", flop: "size-m", flopTxt: "中 (50%) / Check", turn: "size-check", turnTxt: "Check", river: "size-fold", riverTxt: "Fold / 慎重Call", desc: "相手のレイズや強いベットに対して非常に脆いハンド。自分から大きく打ってポットを膨らませず、チェックを多用して安くショーダウンを目指す。" },
                         { rank: "draw", title: "③ ドロー (両面ストドロ/フラドロ)", flop: "size-m", flopTxt: "中〜大 (50-75%)", turn: "size-l", turnTxt: "大 (75%) / セミBlf", river: "size-l", riverTxt: "OBブラフ / バリュー", desc: "強いドローは最強のブラフ候補（セミブラフ）。フロップ・ターンと強気に打ち続けて相手のフォールドを狙い、リバーで完成したら特大バリューに変貌。" },
                         { rank: "air", title: "④ エアー (完全なハズレ/ローカード)", flop: "size-check", flopTxt: "Check / Give up", turn: "size-fold", turnTxt: "Fold", river: "size-fold", riverTxt: "Fold", desc: "相手のレンジ（絡んでいる確率）が強すぎるため、ブラフCBの効果が薄い。無駄なチップを1枚も払わず、フロップ時点で即座に諦めるのがセオリー。" }
+                    ],
+                    defender: [
+                        { act: "相手が強気の大型CB", f: "act-fold", fTxt: "超タイトに削る", t: "act-fold", tTxt: "Fold優位", r: "act-fold", rTxt: "無理しない", desc: "WETボードでのベットは本気度が高い。マージナルな1ペアはターン以降の特大ベットに耐えられないため、フロップで早めに諦めるのがディープスタックの安全策。" },
+                        { act: "相手がチェックを選択", f: "size-check", fTxt: "Checkで回す", t: "size-check", tTxt: "無理に打たない", r: "act-bet", rTxt: "リバーで薄くBet", desc: "WETで相手がチェックした場合、ドローを引きに潜伏しているか諦め。こちらも無理にポットを膨らませず、フリーカードを貰ってリバー勝負。" }
                     ]
                 },
                 mono: {
-                    example: "【通常・MONO】例: A♠ 9♠ 4♠ (同色3枚)<br>特徴: フラッシュ完成の脅威によりお互いに超慎重。極小ベットかチェックが基本。",
-                    cards: [
+                    example: "【通常・MONO】例: A♠ 9♠ 4♠ (同色3枚)<br>特徴: フラッシュ完成の脅威により互いに超慎重。極小ベットかチェックが基本。",
+                    aggressor: [
                         { rank: "monster", title: "① モンスター (完成フラッシュ/セット)", flop: "size-s", flopTxt: "極小 (20%) / Check", turn: "size-m", turnTxt: "中 (50%)", river: "size-l", riverTxt: "中〜大 (75%)", desc: "自分がフラッシュでも相手が引いている可能性が高く、大ベットすると相手のさらに強いフラッシュ以外全員降りてしまう。罠を張るように小さく展開。" },
                         { rank: "pair", title: "② マージナル (上位ワンペア/A持ちワンペア)", flop: "size-check", flopTxt: "Check", turn: "size-check", turnTxt: "Check", river: "size-s", riverTxt: "Check / 安いCall", desc: "ボードにフラッシュの完成形が見えているため、ただのワンペアの価値は暴落。ベットしても最悪の結果にしかならないので、完全チェックで耐える展開。" },
                         { rank: "draw", title: "③ ドロー (4枚目の同色を狙う1枚持ちドロー)", flop: "size-s", flopTxt: "極小 (20%) / CB", turn: "size-check", turnTxt: "Check", river: "size-fold", riverTxt: "Fold / ナッツBlf", desc: "自分が「A♠」などのナッツ（最強）スートを1枚持っている場合、フロップは小さくブラフ可能。引けなければターン以降は大人しくチェック。" },
                         { rank: "air", title: "④ エアー (スートすら絡まない完全ハズレ)", flop: "size-check", flopTxt: "Check / Give up", turn: "size-fold", turnTxt: "Fold", river: "size-fold", riverTxt: "Fold", desc: "最もプレイしてはいけない環境。誰もが警戒して慎重になるためブラフも効かない。速やかにチェックフォールドの選択を取る。" }
+                    ],
+                    defender: [
+                        { act: "全体方針 (受身展開)", f: "size-check", fTxt: "Check / 耐え", t: "size-check", tTxt: "Check", r: "act-fold", rTxt: "大BetにはFold", desc: "フラッシュ完成ボード。相手の20%等の安価な探りCBには、同色1枚持ち（特にAスート等）や上位ワンペアでコール。自分からレイズして的になるのは厳禁。" }
                     ]
                 }
             },
             '3bet': {
                 dry: {
-                    example: "【3BET・DRY】例: A♦ 9♠ 4♣ / K♥ J♦ 3♣<br>特徴: 互いのレンジが強いが、オリジナル有利。大きめの1発(CB)でエアーを落とす。",
-                    cards: [
+                    example: "【3BET・DRY】例: A♦ 9♠ 4♣ / K♥ J♦ 3♣<br>特徴: 互いのレンジが強いが【3ベッター有利】。AやKは3ベッターのレンジに直撃します。",
+                    aggressor: [
                         { rank: "monster", title: "① モンスター (セット/強力な2ペア)", flop: "size-m", flopTxt: "中 (40-50%)", turn: "size-l", turnTxt: "大 (75%)", river: "size-ai", riverTxt: "All-in (コミット)", desc: "3BETポットはすでに十分大きい。フロップ中サイズからターン大サイズと繋げば、リバーでは自然に全チップをオールイン（コミット）できる。" },
                         { rank: "pair", title: "② マージナル (トップペア/高キッカー)", flop: "size-s", flopTxt: "小 (33%)", turn: "size-check", turnTxt: "Check / コントロール", river: "size-m", riverTxt: "中 (50%) / 諦め", desc: "フロップは安く打ってバリュー＆プロテクション。ターンはチェックを挟んでポットサイズを抑制。リバーは相手の出方次第でジャストコールか薄いベット。" },
                         { rank: "draw", title: "③ ドロー (ガット / ナッツバックドア)", flop: "size-s", flopTxt: "小 (33%) / CB", turn: "size-check", turnTxt: "Check", river: "size-fold", riverTxt: "Fold", desc: "3BETポットのDRYボードでのドローは、フロップのCBで1回だけブラフで突っつき、抵抗されたらターン以降は大人しくチェックフォールド。" },
                         { rank: "air", title: "④ エアー (ローポケット / 完全ハズレ)", flop: "size-check", flopTxt: "Check / 諦め", turn: "size-fold", turnTxt: "Fold", river: "size-fold", riverTxt: "Fold", desc: "3BETポットにおいて、完全に外れたエアーでDRYだからと乱暴に打つのは厳禁。相手のレンジが濃いため、フロップから素直に諦める頻度を増やす。" }
+                    ],
+                    defender: [
+                        { act: "相手が20-33%の小CB", f: "act-call", fTxt: "広くCallで粘る", t: "size-check", tTxt: "耐えCheck", r: "size-check", rTxt: "安ければCall", desc: "相手はレンジ有利を盾に広く打ちます。AハイボードでのQQ/JJやバックドア持ちハイカード等で1発は広くCall。スタックが深いため無理なレイズは厳禁。" },
+                        { act: "相手が50%以上の強CB", f: "act-fold", fTxt: "トップペア以外Fold", t: "act-fold", tTxt: "Fold", r: "act-fold", rTxt: "Fold", desc: "ハイカードが相手のAAやAKに直撃しています。150bbあるため、キッカーの弱いワンペアやエアーはターン以降の全損を避けるため即フォールド。" },
+                        { act: "相手がチェックを選択", f: "size-check", fTxt: "Check / 様子見", t: "act-bet", tTxt: "小Bet (30%)", r: "size-check", rTxt: "Showdown", desc: "3ベッターがDRYでチェックした場合、AK等で滑って諦めた可能性が高い。ポジションがあれば30%前後の小ベットでポットをさらいに行く。" }
                     ]
                 },
                 wet: {
-                    example: "【3BET・WET】例: Q♠ J♠ T♦ / 9♦ 8♦ 6♣<br>特徴: SPRが低く、ターンで即オールイン圏内。ドローレンジへのプレッシャーが必要。",
-                    cards: [
+                    example: "【3BET・WET】例: Q♠ J♠ T♦ / 9♦ 8♦ 6♣<br>特徴: SPRが低くターンで即オールイン圏内。ドロー密度の高いコール側（オリジナル）も戦える盤面。",
+                    aggressor: [
                         { rank: "monster", title: "① モンスター (ストレート/セット)", flop: "size-m", flopTxt: "中〜大 (55%)", turn: "size-ai", turnTxt: "All-in (突撃)", river: "size-ai", riverTxt: "All-in", desc: "WETな3BETポットは超危険。ターンでボードがさらに悪化する前に、フロップできっちり大きく打ち、ターンで残りのスタックを全弾オールインする。" },
-                        { rank: "pair", title: "② マージナル (トップペア/オーバーペア)", flop: "size-check", flopTxt: "Check多め / 小(33%)", turn: "size-check", turnTxt: "Check / 耐え", river: "size-fold", riverTxt: "Fold / 慎重Call", desc: "普段強いAAなどのオーバーペアでも、この盤面では非常に危うい。大きく打ってレイズされたら即死亡するため、チェックで波風を立てずに進める。" },
+                        { rank: "pair", title: "② マージナル (トップペア/オーバーペア)", flop: "size-check", flopTxt: "Check多め / 小(33%)", turn: "size-check", turnTxt: "Check / 耐え", river: "size-fold", riverTxt: "Fold / 慎重Call", desc: "普段強いAAなどのオーバーペアでも、このボードでは一気に大ピンチ。大きく打ってレイズされたら即死亡するため、チェックで波風を立てずに進める。" },
                         { rank: "draw", title: "③ ドロー (強いフラドロ/両面ストドロ)", flop: "size-m", flopTxt: "中 (50%) / セミBlf", turn: "size-ai", turnTxt: "All-inブラフ", river: "size-ai", riverTxt: "バリュー or 諦め", desc: "最強のオールイン候補。フロップでジャブ（50%ベット）を打ち、ターンで残りのスタックをオールインブラフ。相手のトップペアを降ろす盾にする。" },
                         { rank: "air", title: "④ エアー (完全ハズレ)", flop: "size-check", flopTxt: "Check / 即Give up", turn: "size-fold", turnTxt: "Fold", river: "size-fold", riverTxt: "Fold", desc: "100%ギブアップ。3BETのWETボードでエアーブラフを打つのはチップをドブに捨てる行為。一瞬でフォールドの準備を。" }
+                    ],
+                    defender: [
+                        { act: "相手が強気な特大CB", f: "act-fold", fTxt: "基本即Fold", t: "act-fold", tTxt: "無理しない", r: "act-fold", rTxt: "全損回避", desc: "150bb環境の3BET/WETは地獄。中途半端な手（キッカー弱トップペアやミドルペア）で付き合うとターン以降の全損に耐えられません。早々に逃げるのが正解。" },
+                        { act: "相手がチェックを選択", f: "size-check", fTxt: "こちらもCheck", t: "size-check", tTxt: "Check維持", r: "size-check", rTxt: "Showdown", desc: "ボードの低さ（8-7-6等）によりオリジナル側にセットやスーコネが多く有利に変貌。ただし相手の罠チェックを警戒し、こちらも無理に大金を賭けず進める。" }
                     ]
                 },
                 mono: {
-                    example: "【3BET・MONO】例: K♥ 7♥ 2♥<br>特徴: フロップでの極小（20-25%）ベットがレンジ全体で肯定される特殊環境。",
-                    cards: [
+                    example: "【3BET・MONO】例: K♥ 7♥ 2♥<br>特徴: フロップでの極小（20-25%）ベットがアグレッサーのレンジ全体で肯定される特殊環境。",
+                    aggressor: [
                         { rank: "monster", title: "① モンスター (完成フラッシュ/セット)", flop: "size-s", flopTxt: "極小 (20-25%)", turn: "size-m", turnTxt: "中 (40%)", river: "size-ai", riverTxt: "All-in", desc: "フロップはレンジ全体のバランスを取るために極小（25%）で打ち、コールした相手からターン・リバーでスタックを奪い切る。" },
                         { rank: "pair", title: "② マージナル (ハート1枚持ちトップペア等)", flop: "size-s", flopTxt: "極小 (20%) / Check", turn: "size-check", turnTxt: "Check", river: "size-check", riverTxt: "Check / 諦め", desc: "相手のフラッシュ完成を警戒し、大きなポットは作らない。フロップで20%の安価な探りCBを打ち、残りのストリートは基本チェックで引きこもる。" },
                         { rank: "draw", title: "③ ドロー (A♥ などのナッツ1枚持ち)", flop: "size-s", flopTxt: "極小 (25%) / CB", turn: "size-check", turnTxt: "Check / セミBlf", river: "size-ai", riverTxt: "ナッツブラフAll-in", desc: "自分が「A♥」を1枚持っている状況は強力なブラフ候補。リバーで4枚目が落ちなくても、自分が最強フラッシュを持っているフリをしてオールイン可能。" },
                         { rank: "air", title: "④ エアー (ハートを持たないハズレ)", flop: "size-check", flopTxt: "Check / Give up", turn: "size-fold", turnTxt: "Fold", river: "size-fold", riverTxt: "Fold", desc: "自分がスート（ドローアウツ）を1枚も持っていないなら即撤退。相手に少しでも突っつかれたら即フォールド。" }
+                    ],
+                    defender: [
+                        { act: "全体的なディフェンス", f: "act-call", fTxt: "同色1枚持ちでCall", t: "size-check", tTxt: "耐えCheck", r: "act-fold", rTxt: "過剰BetはFold", desc: "相手の極小CBに対し、「A♣」などのナッツスート1枚持ちや、上位ワンペア（ハート無し含む）で1発はCall。スタックが深いためレイズして的になるのは厳禁。" }
                     ]
                 }
             },
             '4bet': {
                 dry: {
                     example: "【4BET・DRY】例: A♠ 7♦ 2♣ / K♥ 8♦ 3♠<br>特徴: SPRが極限に低い(約1.0)。アクションは「チェック」か「20%極小」か「即オールイン」のみ。",
-                    cards: [
+                    aggressor: [
                         { rank: "monster", title: "① モンスター (AA/KK/AKヒット)", flop: "size-s", flopTxt: "極小 (20%)", turn: "size-ai", turnTxt: "即All-in", river: "size-ai", riverTxt: "All-in", desc: "すでにポットが巨大。フロップは相手が逃げないよう20%の超極小で誘い、ターンで残ったスタックをすべて押し込む。" },
                         { rank: "pair", title: "② マージナル (QQ/JJなどのアンダーペア)", flop: "size-check", flopTxt: "Check", turn: "size-check", turnTxt: "Check / 耐え", river: "size-fold", riverTxt: "Fold / 祈りCall", desc: "例えばAハイボードでのQQなど。勝っているか負けているかが超極端。自分から打つ意味はゼロなので、チェックで進めて相手のブラフに祈る。" },
                         { rank: "draw", title: "③ ドロー (4BET環境のためほぼ存在しない)", flop: "size-s", flopTxt: "極小 (20%) / Blf", turn: "size-ai", turnTxt: "All-in", river: "size-fold", riverTxt: "Fold", desc: "4BETレンジ同士のため純粋なドローはほぼ存在しない（せいぜいガット等）。フロップ極小CBで相手のポケットペアにプレッシャーをかける。" },
                         { rank: "air", title: "④ エアー (4BETをブラフした残りカス)", flop: "size-check", flopTxt: "Check / Give up", turn: "size-fold", turnTxt: "Fold", river: "size-fold", riverTxt: "Fold", desc: "プリフロップでのブラフが失敗した状態。フロップが完全にハズレならこれ以上1枚もチップを払ってはならない。即座に諦める。" }
+                    ],
+                    defender: [
+                        { act: "相手の極小20%CB", f: "act-call", fTxt: "AKや上位ペアでCall", t: "size-ai", tTxt: "相手All-inに直面", r: "size-check", rTxt: "Showdown", desc: "4BETポットのコール側は非常に狭いレンジ。相手の20%CBには勝っている可能性のあるペアやAKハイでコール。ターンで相手がオールインしてきたら腹を括る。" },
+                        { act: "相手がチェックを選択", f: "size-check", fTxt: "こちらもCheck", t: "size-check", tTxt: "Check維持", r: "size-check", rTxt: "Showdown", desc: "相手がチェックした場合、QQやKKでAハイを警戒してフリーズしているかブラフ失敗。こちらも無理に打たずチェックで安く回してショーダウンを目指す。" }
                     ]
                 },
                 wet: {
                     example: "【4BET・WET】例: Q♠ J♦ T♣ / 9♥ 8♠ 7♦<br>特徴: 致命的なボード。レンジが激突しており、フロップで高確率で命運が決まる。",
-                    cards: [
+                    aggressor: [
                         { rank: "monster", title: "① モンスター (セット/ストレート/最強2ペア)", flop: "size-ai", flopTxt: "即All-in (100%)", turn: "size-ai", turnTxt: "All-in", river: "size-ai", riverTxt: "All-in", desc: "ターンで状況がグチャグチャになる前に、フロップの時点でスタックのすべてを中央に叩き込む（即オールイン）。" },
                         { rank: "pair", title: "② マージナル (AA/KKなどの1ペア)", flop: "size-check", flopTxt: "Check / 覚悟Call", turn: "size-fold", turnTxt: "Fold", river: "size-fold", riverTxt: "Fold", desc: "プリフロップ最強のAAやKKでも、このボードでは一気に大ピンチ。自分から打つと大火傷するため、まずはチェック。相手のオールインには悲痛のフォールドも視野。" },
                         { rank: "draw", title: "③ ドロー (AKなどの強力な両面ドロー等)", flop: "size-ai", flopTxt: "即All-in (ブラフ)", turn: "size-ai", turnTxt: "All-in", river: "size-fold", riverTxt: "Fold", desc: "4BETポットのWETボードでのAK（ストレートドロー＋オーバーカード2枚）は、チェックせずフロップから全弾叩き込んで相手のAA/KKを恐怖に陥れる。" },
                         { rank: "air", title: "④ エアー (完全ハズレ)", flop: "size-check", flopTxt: "Check / 死亡", turn: "size-fold", turnTxt: "Fold", river: "size-fold", riverTxt: "Fold", desc: "チェックフォールド一択。考える必要すらない。" }
+                    ],
+                    defender: [
+                        { act: "フロップで即All-inされた時", f: "act-fold", fTxt: "セット/ストレートのみCall", t: "act-fold", tTxt: "他は全てFold", r: "act-fold", rTxt: "全損回避", desc: "相手がフロップで全スタックを叩き込んできた場合、ただの1ペア（AA含む）は容赦なくフォールド。相手の完成ストレートやセットを素直に認める。" }
                     ]
                 },
                 mono: {
                     example: "【4BET・MONO】例: J♣ 8♣ 3♣<br>特徴: レンジ内に同色がほぼ無い（AKsのみなど）。超特殊なチェック主体の空中戦。",
-                    cards: [
+                    aggressor: [
                         { rank: "monster", title: "① モンスター (完成フラッシュ/セット)", flop: "size-check", flopTxt: "Check多め / 20%", turn: "size-ai", turnTxt: "All-in", river: "size-ai", riverTxt: "All-in", desc: "4BETレンジにフラッシュはほぼ無い。あからさまに打つと相手が逃げるため、フロップはあえて全員チェックで回し、ターンで一気に突撃する。" },
                         { rank: "pair", title: "② マージナル (クラブ1枚も持たないAA/KK)", flop: "size-check", flopTxt: "Check", turn: "size-check", turnTxt: "Check", river: "size-fold", riverTxt: "Fold / 祈りCheck", desc: "ただのワンペアの価値がゼロに近い状態。相手がクラブを1枚（A♣等）持っているだけで大ピンチ。ひたすらチェックで安く終わるのを祈る。" },
                         { rank: "draw", title: "③ ドロー (A♣ を1枚持つAA/KK/AK)", flop: "size-s", flopTxt: "極小 (20%) / CB", turn: "size-ai", turnTxt: "All-inブラフ", river: "size-ai", riverTxt: "バリュー or 諦め", desc: "「A♣」を1枚持っているハンドが最強の兵器になる。フロップで極小CBを打ち、相手が降りなければターンで強烈なオールインを叩き込む。" },
-                        { rank: "air", title: "④ エアー (クラブを持たないハズレ)", flop: "size-check", flopTxt: "Check / 即死", turn: "size-fold", turnTxt: "Fold", river: "size-fold", riverTxt: "Fold", desc: "1ミリも触ってはいけない。チェックして、相手のベットには即座にカードを捨てる。" }
+                        { rank: "air", title: "④ エアー (クラブを持たないハズレ)", flop: "size-check", flopTxt: "Check / 即死", turn: "size-fold", turnTxt: "Fold", river: "size-fold", riverTxt: "Fold", desc: "自分がスート（ドローアウツ）を1枚も持っていないなら即撤退。相手に少しでも突っつかれたら即フォールド。" }
+                    ],
+                    defender: [
+                        { act: "全体方針", f: "size-check", fTxt: "完全Check引きこもり", t: "size-check", tTxt: "Checkのみ", r: "act-fold", rTxt: "打たれたらFold", desc: "4BETかつMONOボードは誰もまともにヒットしていません。「A♣」を自分が持っていない限りは完全チェック。相手からオールインが飛んできたら即フォールド。" }
                     ]
                 }
             }
@@ -200,7 +240,6 @@
         let currentPot = 'srp';
         let currentBoard = 'dry';
 
-        // ポット状況の切り替え
         function changePot(potType) {
             currentPot = potType;
             document.querySelectorAll('#pot-group button').forEach(b => {
@@ -210,7 +249,6 @@
             updateDisplay();
         }
 
-        // ボードテクスチャの切り替え
         function changeBoard(boardType) {
             currentBoard = boardType;
             document.querySelectorAll('#board-group button').forEach(b => {
@@ -220,21 +258,22 @@
             updateDisplay();
         }
 
-        // 表示の総更新
         function updateDisplay() {
             const data = theoryData[currentPot][currentBoard];
-            
-            // 上部解説テキストの更新
             document.getElementById('board-example-text').innerHTML = data.example;
 
-            // コンテナのクリアと再生成
-            const container = document.getElementById('strategy-cards');
+            const container = document.getElementById('main-content');
             container.innerHTML = '';
 
-            data.cards.forEach(c => {
+            // 1. アグレッサーセクション
+            const aggTitle = document.createElement('div');
+            aggTitle.className = 'section-title';
+            aggTitle.innerText = '⚔️ アグレッサー側（主導権あり / 最後にレイズした側）';
+            container.appendChild(aggTitle);
+
+            data.aggressor.forEach(c => {
                 const card = document.createElement('div');
                 card.className = `postflop-card ${c.rank}`;
-                
                 card.innerHTML = `
                     <div class="postflop-title">
                         <span>${c.title}</span>
@@ -249,9 +288,34 @@
                 `;
                 container.appendChild(card);
             });
+
+            // 2. ディフェンダーセクション
+            const defTitle = document.createElement('div');
+            defTitle.className = 'section-title';
+            defTitle.style.marginTop = '20px';
+            defTitle.innerText = '🛡️ ディフェンダー側（主導権なし / 3BET・4BETにコールした側）';
+            container.appendChild(defTitle);
+
+            data.defender.forEach(c => {
+                const card = document.createElement('div');
+                card.className = 'postflop-card defender';
+                card.innerHTML = `
+                    <div class="postflop-title">
+                        <span>【対面状況】 ${c.act}</span>
+                        <span class="hand-badge">DEFEND</span>
+                    </div>
+                    <div class="timeline">
+                        <div class="time-node"><span class="time-label">FLOP</span><span class="size-val ${c.f}">${c.fTxt}</span></div>
+                        <div class="time-node"><span class="time-label">TURN</span><span class="size-val ${c.t}">${c.tTxt}</span></div>
+                        <div class="time-node"><span class="time-label">RIVER</span><span class="size-val ${c.r}">${c.rTxt}</span></div>
+                    </div>
+                    <div class="postflop-desc">${c.desc}</div>
+                `;
+                container.appendChild(card);
+            });
         }
 
-        // 初期起動
+        // 初期レンダリング
         updateDisplay();
     </script>
 </body>
